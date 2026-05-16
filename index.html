@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PayFinder – Payment Provider Directory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080c14;--bg2:#0d1321;--bg3:#111827;--card:#131d2e;--card2:#1a2640;
+  --border:#1e2d45;--primary:#00c2ff;--secondary:#7c3aed;--accent:#00ff9d;
+  --text:#e2e8f0;--muted:#64748b;--danger:#ff4560;
+  --psp:#00c2ff;--acq:#7c3aed;--iso:#f59e0b;--emi:#00ff9d;--gw:#f472b6;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+nav{position:fixed;top:0;width:100%;z-index:999;background:rgba(8,12,20,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 5%;}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto;}
+.logo{font-size:1.4rem;font-weight:900;color:#fff;}
+.logo span{color:var(--primary);}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-badge{background:rgba(0,194,255,.1);border:1px solid rgba(0,194,255,.3);color:var(--primary);padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:600;}
+.live-dot{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--accent);}
+.live-dot::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+.hero{min-height:100vh;background:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,194,255,.1) 0%,transparent 60%),var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 5% 80px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%231e2d45' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");opacity:.3;}
+.hero-content{position:relative;z-index:2;max-width:860px;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,194,255,.08);border:1px solid rgba(0,194,255,.25);color:var(--primary);padding:8px 18px;border-radius:30px;font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:28px;}
+.hero h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.05;margin-bottom:20px;letter-spacing:-1px;}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted);font-size:1.05rem;line-height:1.7;margin-bottom:36px;max-width:620px;margin-left:auto;margin-right:auto;}
+.hero-search{display:flex;max-width:620px;margin:0 auto 28px;background:var(--card2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.3s;}
+.hero-search:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,194,255,.1);}
+.hero-search input{flex:1;background:none;border:none;padding:16px 20px;color:#fff;font-size:.95rem;font-family:'Inter',sans-serif;outline:none;}
+.hero-search input::placeholder{color:var(--muted);}
+.hero-search button{background:linear-gradient(135deg,var(--primary),#0099cc);border:none;padding:0 26px;color:#000;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.type-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;}
+.type-chip{padding:8px 18px;border-radius:30px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid;transition:.3s;}
+.type-chip.psp{border-color:var(--psp);color:var(--psp);}
+.type-chip.psp.active,.type-chip.psp:hover{background:var(--psp);color:#000;}
+.type-chip.acq{border-color:var(--acq);color:var(--acq);}
+.type-chip.acq.active,.type-chip.acq:hover{background:var(--acq);color:#fff;}
+.type-chip.iso{border-color:var(--iso);color:var(--iso);}
+.type-chip.iso.active,.type-chip.iso:hover{background:var(--iso);color:#000;}
+.type-chip.emi{border-color:var(--emi);color:var(--emi);}
+.type-chip.emi.active,.type-chip.emi:hover{background:var(--emi);color:#000;}
+.type-chip.gw{border-color:var(--gw);color:var(--gw);}
+.type-chip.gw.active,.type-chip.gw:hover{background:var(--gw);color:#000;}
+.type-chip.all{border-color:var(--muted);color:var(--muted);}
+.type-chip.all.active,.type-chip.all:hover{background:var(--muted);color:#fff;}
+.hero-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:30px;margin-top:36px;}
+.hstat{text-align:center;}
+.hstat-n{font-size:1.6rem;font-weight:900;color:var(--primary);}
+.hstat-l{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+.filters-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 5%;position:sticky;top:57px;z-index:99;}
+.filters-inner{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.filter-group{display:flex;flex-direction:column;gap:4px;}
+.filter-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+select.filter-select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:.82rem;font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:.3s;min-width:160px;}
+select.filter-select:focus{border-color:var(--primary);}
+select.filter-select option{background:var(--bg3);}
+.filter-reset{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Inter',sans-serif;transition:.3s;}
+.filter-reset:hover{border-color:var(--danger);color:var(--danger);}
+.results-count{font-size:.82rem;color:var(--muted);align-self:flex-end;padding-bottom:2px;}
+
+.directory{padding:36px 5% 80px;max-width:1400px;margin:0 auto;}
+
+/* LOADING */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 20px;gap:20px;}
+.spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading p{color:var(--muted);font-size:.9rem;}
+
+.error-box{background:rgba(255,69,96,.08);border:1px solid rgba(255,69,96,.25);border-radius:14px;padding:30px;text-align:center;max-width:500px;margin:60px auto;}
+.error-box h3{color:var(--danger);margin-bottom:10px;}
+.error-box p{color:var(--muted);font-size:.88rem;line-height:1.6;}
+.retry-btn{margin-top:16px;background:var(--danger);color:#fff;border:none;padding:10px 22px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;cursor:pointer;transition:.3s;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--primary));transform:scaleX(0);transform-origin:left;transition:.3s;}
+.card:hover{transform:translateY(-4px);border-color:var(--c,var(--primary));box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.card:hover::before{transform:scaleX(1);}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px;}
+.card-name{font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.card-country{font-size:.72rem;color:var(--muted);}
+.type-badge{padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;flex-shrink:0;}
+.badge-psp{background:rgba(0,194,255,.12);color:var(--psp);border:1px solid rgba(0,194,255,.25);}
+.badge-acq{background:rgba(124,58,237,.12);color:var(--acq);border:1px solid rgba(124,58,237,.25);}
+.badge-iso{background:rgba(245,158,11,.12);color:var(--iso);border:1px solid rgba(245,158,11,.25);}
+.badge-emi{background:rgba(0,255,157,.12);color:var(--emi);border:1px solid rgba(0,255,157,.25);}
+.badge-gw{background:rgba(244,114,182,.12);color:var(--gw);border:1px solid rgba(244,114,182,.25);}
+.card-desc{font-size:.81rem;color:var(--muted);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.tag{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#94a3b8;padding:3px 9px;border-radius:6px;font-size:.68rem;font-weight:500;}
+.tag.hl{background:rgba(0,255,157,.06);border-color:rgba(0,255,157,.2);color:var(--accent);}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;}
+.risk-pill{padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;}
+.risk-low{background:rgba(0,255,157,.1);color:var(--accent);}
+.risk-med{background:rgba(245,158,11,.1);color:var(--iso);}
+.risk-high{background:rgba(255,69,96,.1);color:var(--danger);}
+.card-region{font-size:.7rem;color:var(--muted);}
+.no-results{text-align:center;padding:80px 20px;color:var(--muted);}
+.no-results div{font-size:3rem;margin-bottom:16px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;backdrop-filter:blur(4px);padding:20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:20px;max-width:700px;width:100%;margin:auto;position:relative;}
+.modal-header{padding:28px 28px 18px;border-bottom:1px solid var(--border);position:relative;}
+.modal-close{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.07);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.modal-close:hover{background:var(--danger);}
+.modal-name{font-size:1.5rem;font-weight:900;color:#fff;margin:8px 0 5px;}
+.modal-hq{color:var(--muted);font-size:.83rem;}
+.modal-body{padding:22px 28px;}
+.ms{margin-bottom:20px;}
+.ms h4{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:8px;}
+.ms p{color:#cbd5e1;font-size:.88rem;line-height:1.7;}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.mi label{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.mi span{font-size:.85rem;color:#e2e8f0;font-weight:500;}
+.mt{display:flex;flex-wrap:wrap;gap:6px;}
+.modal-footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+.btn-web{background:rgba(0,194,255,.1);color:var(--primary);border:1px solid rgba(0,194,255,.3);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.3s;}
+.btn-web:hover{background:rgba(0,194,255,.2);}
+.btn-em{background:rgba(0,255,157,.08);color:var(--accent);border:1px solid rgba(0,255,157,.25);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.3s;}
+.btn-em:hover{background:rgba(0,255,157,.15);}
+.btn-cl{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--border);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;cursor:pointer;transition:.3s;font-family:'Inter',sans-serif;}
+.btn-cl:hover{border-color:var(--primary);color:var(--primary);}
+
+/* INQUIRY */
+.inquiry{background:var(--bg2);border-top:1px solid var(--border);padding:80px 5%;}
+.inquiry-inner{max-width:700px;margin:0 auto;}
+.s-tag{display:inline-block;background:rgba(0,194,255,.08);border:1px solid rgba(0,194,255,.2);color:var(--primary);padding:6px 16px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;}
+.s-title{font-size:2rem;font-weight:900;color:#fff;margin-bottom:10px;}
+.s-sub{color:var(--muted);font-size:.92rem;line-height:1.7;margin-bottom:36px;}
+.fw{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.fi{display:flex;flex-direction:column;gap:5px;}
+.fi.full{grid-column:span 2;}
+.fi label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.fi input,.fi select,.fi textarea{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:#fff;font-size:.88rem;font-family:'Inter',sans-serif;outline:none;transition:.3s;}
+.fi input::placeholder,.fi textarea::placeholder{color:var(--muted);}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--primary);}
+.fi select option{background:var(--bg3);}
+.fi textarea{resize:vertical;min-height:95px;}
+.sub-btn{width:100%;background:linear-gradient(135deg,var(--primary),#0099cc);color:#000;border:none;padding:15px;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;transition:.3s;font-family:'Inter',sans-serif;margin-top:4px;}
+.sub-btn:hover{opacity:.88;transform:translateY(-1px);}
+.f-ok{display:none;text-align:center;padding:30px;}
+.f-ok .ic{font-size:3rem;margin-bottom:14px;}
+.f-ok h3{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:8px;}
+.f-ok p{color:var(--muted);}
+
+footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 5%;text-align:center;}
+.fl{font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:8px;}
+.fl span{color:var(--primary);}
+footer p{color:var(--muted);font-size:.8rem;}
+
+@media(max-width:768px){
+  .fg,.mg{grid-template-columns:1fr;}
+  .fi.full{grid-column:span 1;}
+  .filters-inner{flex-direction:column;align-items:stretch;}
+  select.filter-select{width:100%;}
+  .modal-footer{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Pay<span>Finder</span></div>
+    <div class="nav-right">
+      <div class="live-dot">Live Data</div>
+      <div class="nav-badge" id="navCount">Loading...</div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">🌐 Global Payment Provider Directory</div>
+    <h1>Find the Right <span>Payment Partner</span> for Your Business</h1>
+    <p>Search PSPs, Acquirers, ISOs, EMIs, and Payment Gateways by industry, MCC, region, and risk level — powered by live data.</p>
+    <div class="hero-search">
+      <input type="text" id="heroSearch" placeholder="Search by name, feature, or region..." oninput="filterAll()"/>
+      <button onclick="filterAll()">Search</button>
+    </div>
+    <div class="type-chips">
+      <span class="type-chip all active" onclick="setType('all',this)">All Types</span>
+      <span class="type-chip psp" onclick="setType('PSP',this)">PSP</span>
+      <span class="type-chip acq" onclick="setType('Acquirer',this)">Acquirer</span>
+      <span class="type-chip iso" onclick="setType('ISO',this)">ISO</span>
+      <span class="type-chip emi" onclick="setType('EMI',this)">EMI</span>
+      <span class="type-chip gw" onclick="setType('Gateway',this)">Gateway</span>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n" id="sPSP">–</div><div class="hstat-l">PSPs</div></div>
+      <div class="hstat"><div class="hstat-n" id="sACQ">–</div><div class="hstat-l">Acquirers</div></div>
+      <div class="hstat"><div class="hstat-n" id="sISO">–</div><div class="hstat-l">ISOs</div></div>
+      <div class="hstat"><div class="hstat-n" id="sEMI">–</div><div class="hstat-l">EMIs</div></div>
+      <div class="hstat"><div class="hstat-n" id="sGW">–</div><div class="hstat-l">Gateways</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="filters-bar">
+  <div class="filters-inner">
+    <div class="filter-group">
+      <div class="filter-label">Region</div>
+      <select class="filter-select" id="fRegion" onchange="filterAll()">
+        <option value="">All Regions</option>
+        <option>Global</option><option>Europe</option><option>North America</option>
+        <option>Asia-Pacific</option><option>Latin America</option><option>Middle East & Africa</option><option>UK</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Business Model / MCC</div>
+      <select class="filter-select" id="fMCC" onchange="filterAll()">
+        <option value="">All Industries</option>
+        <option>eCommerce</option><option>Adult / High-Risk</option><option>Digital Gift Cards</option>
+        <option>Forex & FX Trading</option><option>Crypto & Web3</option><option>Online Gambling & Gaming</option>
+        <option>Travel & Airlines</option><option>SaaS & Subscriptions</option><option>Pharmaceuticals</option>
+        <option>Nutraceuticals & Supplements</option><option>CBD & Cannabis</option><option>Financial Services</option>
+        <option>Digital Goods</option><option>Marketplaces</option><option>Retail & POS</option>
+        <option>Telecom</option><option>Gaming & Esports</option><option>Dating & Social</option>
+        <option>Charities & NGOs</option><option>Healthcare</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Risk Appetite</div>
+      <select class="filter-select" id="fRisk" onchange="filterAll()">
+        <option value="">All Risk Levels</option>
+        <option>Low</option><option>Medium</option><option>High</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Currency</div>
+      <select class="filter-select" id="fCurrency" onchange="filterAll()">
+        <option value="">All Currencies</option>
+        <option>USD</option><option>EUR</option><option>GBP</option><option>Multi-currency</option>
+      </select>
+    </div>
+    <button class="filter-reset" onclick="resetFilters()">✕ Reset</button>
+    <span class="results-count" id="resCount"></span>
+  </div>
+</div>
+
+<div class="directory">
+  <div id="loadingState" class="loading">
+    <div class="spinner"></div>
+    <p>Fetching providers from Google Sheets...</p>
+  </div>
+  <div id="errorState" style="display:none;">
+    <div class="error-box">
+      <h3>⚠️ Could not load data</h3>
+      <p>Unable to fetch providers from Google Sheets. Please check the sheet is published and try again.</p>
+      <button class="retry-btn" onclick="loadData()">↺ Retry</button>
+    </div>
+  </div>
+  <div class="grid" id="grid" style="display:none;"></div>
+  <div class="no-results" id="noResults" style="display:none;">
+    <div>🔍</div>
+    <p>No providers match your filters. Try adjusting your search criteria.</p>
+  </div>
+</div>
+
+<section class="inquiry" id="inquiry">
+  <div class="inquiry-inner">
+    <div class="s-tag">Get Matched</div>
+    <div class="s-title">Submit a Business Inquiry</div>
+    <p class="s-sub">Not sure which provider fits your needs? Tell us about your business and we'll connect you with the right payment partner.</p>
+    <div class="fw">
+      <div id="inquiryForm">
+        <div class="fg">
+          <div class="fi"><label>First Name</label><input type="text" placeholder="John"/></div>
+          <div class="fi"><label>Last Name</label><input type="text" placeholder="Smith"/></div>
+          <div class="fi"><label>Company</label><input type="text" placeholder="Acme Inc."/></div>
+          <div class="fi"><label>Email</label><input type="email" id="iqEmail" placeholder="john@company.com"/></div>
+          <div class="fi">
+            <label>Provider Type Needed</label>
+            <select><option value="">— Select —</option><option>PSP</option><option>Acquirer</option><option>ISO</option><option>EMI</option><option>Gateway</option><option>Not Sure</option></select>
+          </div>
+          <div class="fi">
+            <label>Business Model / MCC</label>
+            <select>
+              <option value="">— Select industry —</option>
+              <option>eCommerce</option><option>Adult / High-Risk</option><option>Digital Gift Cards</option>
+              <option>Forex & FX Trading</option><option>Crypto & Web3</option><option>Online Gambling & Gaming</option>
+              <option>Travel & Airlines</option><option>SaaS & Subscriptions</option><option>Pharmaceuticals</option>
+              <option>Nutraceuticals & Supplements</option><option>CBD & Cannabis</option><option>Financial Services</option>
+              <option>Digital Goods</option><option>Marketplaces</option><option>Retail & POS</option>
+              <option>Gaming & Esports</option><option>Dating & Social</option><option>Charities & NGOs</option><option>Healthcare</option>
+            </select>
+          </div>
+          <div class="fi">
+            <label>Monthly Volume</label>
+            <select><option value="">— Select range —</option><option>Under $10K</option><option>$10K–$50K</option><option>$50K–$200K</option><option>$200K–$1M</option><option>$1M+</option></select>
+          </div>
+          <div class="fi">
+            <label>Primary Region</label>
+            <select><option value="">— Select —</option><option>Global</option><option>Europe</option><option>North America</option><option>Asia-Pacific</option><option>Latin America</option><option>Middle East & Africa</option></select>
+          </div>
+          <div class="fi full"><label>Tell us about your business</label><textarea placeholder="Describe your business model, current challenges, and what you're looking for..."></textarea></div>
+          <div class="fi full"><button class="sub-btn" onclick="submitInquiry()">🚀 Submit Inquiry — Get Matched Free</button></div>
+        </div>
+      </div>
+      <div class="f-ok" id="iqSuccess">
+        <div class="ic">✅</div>
+        <h3>Inquiry Submitted!</h3>
+        <p>We'll review your requirements and connect you with the best payment partners within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fl">Pay<span>Finder</span></div>
+  <p>The most comprehensive payment provider directory — PSPs, Acquirers, ISOs, EMIs & Gateways.</p>
+  <p style="margin-top:8px;">© 2026 PayFinder. All rights reserved. · Data powered by Google Sheets.</p>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div id="mType"></div>
+      <div class="modal-name" id="mName"></div>
+      <div class="modal-hq" id="mHQ"></div>
+    </div>
+    <div class="modal-body">
+      <div class="ms"><h4>About</h4><p id="mDesc"></p></div>
+      <div class="ms">
+        <h4>Key Details</h4>
+        <div class="mg">
+          <div class="mi"><label>Type</label><span id="mT"></span></div>
+          <div class="mi"><label>Risk Appetite</label><span id="mRisk"></span></div>
+          <div class="mi"><label>Regions Served</label><span id="mRegion"></span></div>
+          <div class="mi"><label>Currencies</label><span id="mCurrency"></span></div>
+          <div class="mi"><label>Setup Time</label><span id="mSetup"></span></div>
+          <div class="mi"><label>Processing Fees</label><span id="mFees"></span></div>
+        </div>
+      </div>
+      <div class="ms"><h4>Supported Industries / MCCs</h4><div class="mt" id="mMCCs"></div></div>
+      <div class="ms"><h4>Payment Methods</h4><div class="mt" id="mMethods"></div></div>
+    </div>
+    <div class="modal-footer">
+      <a id="mWebsite" href="#" target="_blank" class="btn-web">🌐 Visit Website</a>
+      <a id="mEmail" href="#" class="btn-em">✉️ Send Inquiry</a>
+      <button class="btn-cl" onclick="closeModalDirect()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQULACMaldm0hfJ7AQE7gMryD0ELNLHanqQKXF-37E0ktngVnHojcMgVIevWReMZpqkoC0CWXw65Z5B/pub?output=csv';
+
+let ALL = [], activeType = 'all';
+
+// Parse CSV respecting quoted fields
+function parseCSV(text) {
+  const lines = text.trim().split('\n');
+  const headers = parseRow(lines[0]);
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = parseRow(line);
+    const obj = {};
+    headers.forEach((h, i) => obj[h.trim()] = (vals[i] || '').trim());
+    return obj;
+  });
+}
+
+function parseRow(line) {
+  const result = [], re = /(?:^|,)("(?:[^"]|"")*"|[^,]*)/g;
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    let v = m[1];
+    if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1,-1).replace(/""/g,'"');
+    result.push(v);
+  }
+  return result;
+}
+
+async function loadData() {
+  document.getElementById('loadingState').style.display = 'flex';
+  document.getElementById('errorState').style.display = 'none';
+  document.getElementById('grid').style.display = 'none';
+  document.getElementById('noResults').style.display = 'none';
+
+  try {
+    const res = await fetch(SHEET_CSV);
+    if (!res.ok) throw new Error('Fetch failed');
+    const text = await res.text();
+    ALL = parseCSV(text).filter(r => r.Name && r.Type);
+    updateStats();
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('grid').style.display = 'grid';
+    filterAll();
+  } catch(e) {
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('errorState').style.display = 'block';
+  }
+}
+
+function updateStats() {
+  const count = t => ALL.filter(p => p.Type === t).length;
+  document.getElementById('sPSP').textContent = count('PSP');
+  document.getElementById('sACQ').textContent = count('Acquirer');
+  document.getElementById('sISO').textContent = count('ISO');
+  document.getElementById('sEMI').textContent = count('EMI');
+  document.getElementById('sGW').textContent  = count('Gateway');
+  document.getElementById('navCount').textContent = ALL.length + ' Providers';
+}
+
+function typeColor(t) {
+  return {PSP:'var(--psp)',Acquirer:'var(--acq)',ISO:'var(--iso)',EMI:'var(--emi)',Gateway:'var(--gw)'}[t]||'var(--primary)';
+}
+function badgeClass(t) {
+  return {PSP:'badge-psp',Acquirer:'badge-acq',ISO:'badge-iso',EMI:'badge-emi',Gateway:'badge-gw'}[t]||'badge-psp';
+}
+function riskClass(r) {
+  return r==='Low'?'risk-low':r==='Medium'?'risk-med':'risk-high';
+}
+
+function renderGrid(data) {
+  const g = document.getElementById('grid');
+  const nr = document.getElementById('noResults');
+  document.getElementById('resCount').textContent = `${data.length} provider${data.length!==1?'s':''} found`;
+  if (!data.length) { g.innerHTML=''; nr.style.display='block'; return; }
+  nr.style.display = 'none';
+  g.innerHTML = data.map((p,i) => {
+    const mccs = p.MCCs ? p.MCCs.split(',').map(s=>s.trim()).filter(Boolean) : [];
+    const shown = mccs.slice(0,3);
+    const extra = mccs.length > 3 ? mccs.length - 3 : 0;
+    return `
+      <div class="card" style="--c:${typeColor(p.Type)}" onclick="openModal(${ALL.indexOf(p)})">
+        <div class="card-top">
+          <div><div class="card-name">${p.Name}</div><div class="card-country">📍 ${p.HQ||''}</div></div>
+          <span class="type-badge ${badgeClass(p.Type)}">${p.Type}</span>
+        </div>
+        <div class="card-desc">${p.Description||''}</div>
+        <div class="card-tags">
+          ${shown.map(m=>`<span class="tag">${m}</span>`).join('')}
+          ${extra?`<span class="tag">+${extra}</span>`:''}
+        </div>
+        <div class="card-bottom">
+          <span class="risk-pill ${riskClass(p.Risk)}">${p.Risk||'–'} Risk</span>
+          <span class="card-region">🌐 ${p.Region||''}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function setType(t, el) {
+  activeType = t;
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  filterAll();
+}
+
+function filterAll() {
+  const q       = (document.getElementById('heroSearch').value||'').toLowerCase();
+  const region  = document.getElementById('fRegion').value;
+  const mcc     = document.getElementById('fMCC').value;
+  const risk    = document.getElementById('fRisk').value;
+  const currency= document.getElementById('fCurrency').value;
+
+  const filtered = ALL.filter(p => {
+    if (activeType !== 'all' && p.Type !== activeType) return false;
+    if (region && p.Region !== region && p.Region !== 'Global') return false;
+    if (mcc && !(p.MCCs||'').includes(mcc)) return false;
+    if (risk && p.Risk !== risk) return false;
+    if (currency && currency !== 'Multi-currency' &&
+        !(p.Currencies||'').includes(currency) && p.Currencies !== 'Multi-currency') return false;
+    if (q) {
+      const hay = [p.Name,p.Description,p.MCCs,p.HQ,p.Region].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  renderGrid(filtered);
+}
+
+function resetFilters() {
+  document.getElementById('heroSearch').value = '';
+  document.getElementById('fRegion').value = '';
+  document.getElementById('fMCC').value = '';
+  document.getElementById('fRisk').value = '';
+  document.getElementById('fCurrency').value = '';
+  activeType = 'all';
+  document.querySelectorAll('.type-chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.type-chip.all').classList.add('active');
+  filterAll();
+}
+
+function openModal(i) {
+  const p = ALL[i];
+  const mccs    = (p.MCCs||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const methods = (p['Payment Methods']||'').split(',').map(s=>s.trim()).filter(Boolean);
+  document.getElementById('mType').innerHTML = `<span class="type-badge ${badgeClass(p.Type)}">${p.Type}</span>`;
+  document.getElementById('mName').textContent = p.Name;
+  document.getElementById('mHQ').textContent   = '📍 ' + (p.HQ||'');
+  document.getElementById('mDesc').textContent = p.Description||'';
+  document.getElementById('mT').textContent       = p.Type;
+  document.getElementById('mRisk').innerHTML      = `<span class="risk-pill ${riskClass(p.Risk)}">${p.Risk}</span>`;
+  document.getElementById('mRegion').textContent  = p.Region||'–';
+  document.getElementById('mCurrency').textContent= p.Currencies||'–';
+  document.getElementById('mSetup').textContent   = p['Setup Time']||'–';
+  document.getElementById('mFees').textContent    = p['Processing Fees']||'–';
+  document.getElementById('mMCCs').innerHTML    = mccs.map(m=>`<span class="tag hl">${m}</span>`).join('');
+  document.getElementById('mMethods').innerHTML = methods.map(m=>`<span class="tag">${m}</span>`).join('');
+
+  const ws = document.getElementById('mWebsite');
+  const em = document.getElementById('mEmail');
+  if (p.Website) {
+    ws.href = p.Website;
+    try { ws.textContent = '🌐 ' + new URL(p.Website).hostname.replace('www.',''); }
+    catch { ws.textContent = '🌐 Visit Website'; }
+    ws.style.display = 'inline-flex';
+  } else { ws.style.display = 'none'; }
+
+  if (p.Email) {
+    em.href = 'mailto:' + p.Email.replace('mailto:','');
+    em.style.display = 'inline-flex';
+  } else { em.style.display = 'none'; }
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) { if (e.target === document.getElementById('modal')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
+
+function submitInquiry() {
+  const email = document.getElementById('iqEmail').value;
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email.'); return; }
+  document.getElementById('inquiryForm').style.display = 'none';
+  document.getElementById('iqSuccess').style.display   = 'block';
+}
+
+// Boot
+loadData();
+</script>
+</body>
+</html>
