@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PayFinder – Payment Provider Directory</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#080c14;--bg2:#0d1321;--bg3:#111827;--card:#131d2e;--card2:#1a2640;
+  --border:#1e2d45;--primary:#00c2ff;--secondary:#7c3aed;--accent:#00ff9d;
+  --text:#e2e8f0;--muted:#64748b;--danger:#ff4560;
+  --psp:#00c2ff;--acq:#7c3aed;--iso:#f59e0b;--emi:#00ff9d;--gw:#f472b6;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+nav{position:fixed;top:0;width:100%;z-index:999;background:rgba(8,12,20,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 5%;}
+.nav-inner{display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto;}
+.logo{font-size:1.4rem;font-weight:900;color:#fff;letter-spacing:-0.5px;}
+.logo span{color:var(--primary);}
+.nav-badge{background:rgba(0,194,255,.1);border:1px solid rgba(0,194,255,.3);color:var(--primary);padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:600;}
+
+.hero{min-height:100vh;background:radial-gradient(ellipse at 20% 50%,rgba(124,58,237,.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(0,194,255,.1) 0%,transparent 60%),var(--bg);display:flex;align-items:center;justify-content:center;text-align:center;padding:120px 5% 80px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%231e2d45' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");opacity:.3;}
+.hero-content{position:relative;z-index:2;max-width:860px;}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:rgba(0,194,255,.08);border:1px solid rgba(0,194,255,.25);color:var(--primary);padding:8px 18px;border-radius:30px;font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:2px;margin-bottom:28px;}
+.hero h1{font-size:clamp(2.2rem,5vw,4rem);font-weight:900;line-height:1.05;margin-bottom:20px;letter-spacing:-1px;}
+.hero h1 span{background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--muted);font-size:1.05rem;line-height:1.7;margin-bottom:36px;max-width:620px;margin-left:auto;margin-right:auto;}
+.hero-search{display:flex;max-width:620px;margin:0 auto 28px;background:var(--card2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:.3s;}
+.hero-search:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,194,255,.1);}
+.hero-search input{flex:1;background:none;border:none;padding:16px 20px;color:#fff;font-size:.95rem;font-family:'Inter',sans-serif;outline:none;}
+.hero-search input::placeholder{color:var(--muted);}
+.hero-search button{background:linear-gradient(135deg,var(--primary),#0099cc);border:none;padding:0 26px;color:#000;font-weight:700;font-size:.9rem;cursor:pointer;font-family:'Inter',sans-serif;}
+.type-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;}
+.type-chip{padding:8px 18px;border-radius:30px;font-size:.78rem;font-weight:700;cursor:pointer;border:1.5px solid;transition:.3s;letter-spacing:.5px;}
+.type-chip.psp{border-color:var(--psp);color:var(--psp);}
+.type-chip.psp.active,.type-chip.psp:hover{background:var(--psp);color:#000;}
+.type-chip.acq{border-color:var(--acq);color:var(--acq);}
+.type-chip.acq.active,.type-chip.acq:hover{background:var(--acq);color:#fff;}
+.type-chip.iso{border-color:var(--iso);color:var(--iso);}
+.type-chip.iso.active,.type-chip.iso:hover{background:var(--iso);color:#000;}
+.type-chip.emi{border-color:var(--emi);color:var(--emi);}
+.type-chip.emi.active,.type-chip.emi:hover{background:var(--emi);color:#000;}
+.type-chip.gw{border-color:var(--gw);color:var(--gw);}
+.type-chip.gw.active,.type-chip.gw:hover{background:var(--gw);color:#000;}
+.type-chip.all{border-color:var(--muted);color:var(--muted);}
+.type-chip.all.active,.type-chip.all:hover{background:var(--muted);color:#fff;}
+.hero-stats{display:flex;flex-wrap:wrap;justify-content:center;gap:30px;margin-top:36px;}
+.hstat{text-align:center;}
+.hstat-n{font-size:1.6rem;font-weight:900;color:var(--primary);}
+.hstat-l{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+
+.filters-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 5%;position:sticky;top:57px;z-index:99;}
+.filters-inner{max-width:1400px;margin:0 auto;display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.filter-group{display:flex;flex-direction:column;gap:4px;}
+.filter-label{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+select.filter-select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:.82rem;font-family:'Inter',sans-serif;cursor:pointer;outline:none;transition:.3s;min-width:160px;}
+select.filter-select:focus{border-color:var(--primary);}
+select.filter-select option{background:var(--bg3);}
+.filter-reset{margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Inter',sans-serif;transition:.3s;}
+.filter-reset:hover{border-color:var(--danger);color:var(--danger);}
+.results-count{font-size:.82rem;color:var(--muted);align-self:flex-end;padding-bottom:2px;}
+
+.directory{padding:36px 5% 80px;max-width:1400px;margin:0 auto;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;cursor:pointer;transition:.3s;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--primary));transform:scaleX(0);transform-origin:left;transition:.3s;}
+.card:hover{transform:translateY(-4px);border-color:var(--c,var(--primary));box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.card:hover::before{transform:scaleX(1);}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px;}
+.card-name{font-size:1rem;font-weight:700;color:#fff;margin-bottom:3px;}
+.card-country{font-size:.72rem;color:var(--muted);}
+.type-badge{padding:4px 10px;border-radius:20px;font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;white-space:nowrap;flex-shrink:0;}
+.badge-psp{background:rgba(0,194,255,.12);color:var(--psp);border:1px solid rgba(0,194,255,.25);}
+.badge-acq{background:rgba(124,58,237,.12);color:var(--acq);border:1px solid rgba(124,58,237,.25);}
+.badge-iso{background:rgba(245,158,11,.12);color:var(--iso);border:1px solid rgba(245,158,11,.25);}
+.badge-emi{background:rgba(0,255,157,.12);color:var(--emi);border:1px solid rgba(0,255,157,.25);}
+.badge-gw{background:rgba(244,114,182,.12);color:var(--gw);border:1px solid rgba(244,114,182,.25);}
+.card-desc{font-size:.81rem;color:var(--muted);line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
+.tag{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:#94a3b8;padding:3px 9px;border-radius:6px;font-size:.68rem;font-weight:500;}
+.tag.highlight{background:rgba(0,255,157,.06);border-color:rgba(0,255,157,.2);color:var(--accent);}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;}
+.risk-pill{padding:3px 9px;border-radius:20px;font-size:.68rem;font-weight:700;text-transform:uppercase;}
+.risk-low{background:rgba(0,255,157,.1);color:var(--accent);}
+.risk-med{background:rgba(245,158,11,.1);color:var(--iso);}
+.risk-high{background:rgba(255,69,96,.1);color:var(--danger);}
+.card-region{font-size:.7rem;color:var(--muted);}
+.no-results{text-align:center;padding:80px 20px;color:var(--muted);}
+.no-results div{font-size:3rem;margin-bottom:16px;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;backdrop-filter:blur(4px);padding:20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.modal{background:var(--bg3);border:1px solid var(--border);border-radius:20px;max-width:700px;width:100%;margin:auto;position:relative;overflow:hidden;}
+.modal-header{padding:28px 28px 18px;border-bottom:1px solid var(--border);position:relative;}
+.modal-close{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.07);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.modal-close:hover{background:var(--danger);}
+.modal-name{font-size:1.5rem;font-weight:900;color:#fff;margin:8px 0 5px;}
+.modal-hq{color:var(--muted);font-size:.83rem;}
+.modal-body{padding:22px 28px;}
+.modal-section{margin-bottom:20px;}
+.modal-section h4{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:600;margin-bottom:8px;}
+.modal-section p{color:#cbd5e1;font-size:.88rem;line-height:1.7;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.modal-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+.modal-item label{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;}
+.modal-item span{font-size:.85rem;color:#e2e8f0;font-weight:500;}
+.modal-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.modal-footer{padding:18px 28px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;}
+.btn-website{background:rgba(0,194,255,.1);color:var(--primary);border:1px solid rgba(0,194,255,.3);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.3s;}
+.btn-website:hover{background:rgba(0,194,255,.2);}
+.btn-email{background:rgba(0,255,157,.08);color:var(--accent);border:1px solid rgba(0,255,157,.25);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:.3s;}
+.btn-email:hover{background:rgba(0,255,157,.15);}
+.btn-secondary{background:rgba(255,255,255,.06);color:#fff;border:1px solid var(--border);padding:11px 20px;border-radius:10px;font-weight:600;font-size:.88rem;cursor:pointer;transition:.3s;font-family:'Inter',sans-serif;}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary);}
+
+.inquiry{background:var(--bg2);border-top:1px solid var(--border);padding:80px 5%;}
+.inquiry-inner{max-width:700px;margin:0 auto;}
+.section-tag{display:inline-block;background:rgba(0,194,255,.08);border:1px solid rgba(0,194,255,.2);color:var(--primary);padding:6px 16px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;}
+.section-title{font-size:2rem;font-weight:900;color:#fff;margin-bottom:10px;}
+.section-sub{color:var(--muted);font-size:.92rem;line-height:1.7;margin-bottom:36px;}
+.form-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.fi{display:flex;flex-direction:column;gap:5px;}
+.fi.full{grid-column:span 2;}
+.fi label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;}
+.fi input,.fi select,.fi textarea{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:#fff;font-size:.88rem;font-family:'Inter',sans-serif;outline:none;transition:.3s;}
+.fi input::placeholder,.fi textarea::placeholder{color:var(--muted);}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--primary);}
+.fi select option{background:var(--bg3);}
+.fi textarea{resize:vertical;min-height:95px;}
+.submit-btn{width:100%;background:linear-gradient(135deg,var(--primary),#0099cc);color:#000;border:none;padding:15px;border-radius:10px;font-size:.95rem;font-weight:800;cursor:pointer;transition:.3s;font-family:'Inter',sans-serif;margin-top:4px;}
+.submit-btn:hover{opacity:.88;transform:translateY(-1px);}
+.form-success{display:none;text-align:center;padding:30px;}
+.form-success .icon{font-size:3rem;margin-bottom:14px;}
+.form-success h3{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:8px;}
+.form-success p{color:var(--muted);}
+
+footer{background:var(--bg);border-top:1px solid var(--border);padding:40px 5%;text-align:center;}
+.footer-logo{font-size:1.4rem;font-weight:900;color:#fff;margin-bottom:8px;}
+.footer-logo span{color:var(--primary);}
+footer p{color:var(--muted);font-size:.8rem;}
+
+@media(max-width:768px){
+  .fg,.modal-grid{grid-template-columns:1fr;}
+  .fi.full{grid-column:span 1;}
+  .filters-inner{flex-direction:column;align-items:stretch;}
+  select.filter-select{width:100%;}
+  .modal-footer{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo">Pay<span>Finder</span></div>
+    <div class="nav-badge">125+ Providers</div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-tag">🌐 Global Payment Provider Directory</div>
+    <h1>Find the Right <span>Payment Partner</span> for Your Business</h1>
+    <p>Search PSPs, Acquirers, ISOs, EMIs, and Payment Gateways by industry, MCC, region, and risk level — all in one place.</p>
+    <div class="hero-search">
+      <input type="text" id="heroSearch" placeholder="Search by name, feature, or region..." oninput="filterAll()"/>
+      <button onclick="filterAll()">Search</button>
+    </div>
+    <div class="type-chips">
+      <span class="type-chip all active" onclick="setType('all',this)">All Types</span>
+      <span class="type-chip psp" onclick="setType('PSP',this)">PSP</span>
+      <span class="type-chip acq" onclick="setType('Acquirer',this)">Acquirer</span>
+      <span class="type-chip iso" onclick="setType('ISO',this)">ISO</span>
+      <span class="type-chip emi" onclick="setType('EMI',this)">EMI</span>
+      <span class="type-chip gw" onclick="setType('Gateway',this)">Gateway</span>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">40</div><div class="hstat-l">PSPs</div></div>
+      <div class="hstat"><div class="hstat-n">20</div><div class="hstat-l">Acquirers</div></div>
+      <div class="hstat"><div class="hstat-n">20</div><div class="hstat-l">ISOs</div></div>
+      <div class="hstat"><div class="hstat-n">20</div><div class="hstat-l">EMIs</div></div>
+      <div class="hstat"><div class="hstat-n">25</div><div class="hstat-l">Gateways</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="filters-bar">
+  <div class="filters-inner">
+    <div class="filter-group">
+      <div class="filter-label">Region</div>
+      <select class="filter-select" id="fRegion" onchange="filterAll()">
+        <option value="">All Regions</option>
+        <option>Global</option><option>Europe</option><option>North America</option>
+        <option>Asia-Pacific</option><option>Latin America</option><option>Middle East & Africa</option><option>UK</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Business Model / MCC</div>
+      <select class="filter-select" id="fMCC" onchange="filterAll()">
+        <option value="">All Industries</option>
+        <option>eCommerce</option><option>Adult / High-Risk</option><option>Digital Gift Cards</option>
+        <option>Forex & FX Trading</option><option>Crypto & Web3</option><option>Online Gambling & Gaming</option>
+        <option>Travel & Airlines</option><option>SaaS & Subscriptions</option><option>Pharmaceuticals</option>
+        <option>Nutraceuticals & Supplements</option><option>CBD & Cannabis</option><option>Financial Services</option>
+        <option>Digital Goods</option><option>Marketplaces</option><option>Retail & POS</option>
+        <option>Telecom</option><option>Gaming & Esports</option><option>Dating & Social</option>
+        <option>Charities & NGOs</option><option>Healthcare</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Risk Appetite</div>
+      <select class="filter-select" id="fRisk" onchange="filterAll()">
+        <option value="">All Risk Levels</option>
+        <option>Low</option><option>Medium</option><option>High</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-label">Currency</div>
+      <select class="filter-select" id="fCurrency" onchange="filterAll()">
+        <option value="">All Currencies</option>
+        <option>USD</option><option>EUR</option><option>GBP</option><option>Multi-currency</option>
+      </select>
+    </div>
+    <button class="filter-reset" onclick="resetFilters()">✕ Reset</button>
+    <span class="results-count" id="resCount"></span>
+  </div>
+</div>
+
+<div class="directory">
+  <div class="grid" id="grid"></div>
+  <div class="no-results" id="noResults" style="display:none;">
+    <div>🔍</div>
+    <p>No providers match your filters. Try adjusting your search criteria.</p>
+  </div>
+</div>
+
+<section class="inquiry" id="inquiry">
+  <div class="inquiry-inner">
+    <div class="section-tag">Get Matched</div>
+    <div class="section-title">Submit a Business Inquiry</div>
+    <p class="section-sub">Not sure which provider fits your needs? Tell us about your business and we'll connect you with the right payment partner.</p>
+    <div class="form-wrap">
+      <div id="inquiryForm">
+        <div class="fg">
+          <div class="fi"><label>First Name</label><input type="text" placeholder="John"/></div>
+          <div class="fi"><label>Last Name</label><input type="text" placeholder="Smith"/></div>
+          <div class="fi"><label>Company</label><input type="text" placeholder="Acme Inc."/></div>
+          <div class="fi"><label>Email</label><input type="email" id="iqEmail" placeholder="john@company.com"/></div>
+          <div class="fi"><label>Provider Type Needed</label>
+            <select><option value="">— Select —</option><option>PSP</option><option>Acquirer</option><option>ISO</option><option>EMI</option><option>Gateway</option><option>Not Sure</option></select>
+          </div>
+          <div class="fi"><label>Business Model / MCC</label>
+            <select><option value="">— Select industry —</option>
+              <option>eCommerce</option><option>Adult / High-Risk</option><option>Digital Gift Cards</option>
+              <option>Forex & FX Trading</option><option>Crypto & Web3</option><option>Online Gambling & Gaming</option>
+              <option>Travel & Airlines</option><option>SaaS & Subscriptions</option><option>Pharmaceuticals</option>
+              <option>Nutraceuticals & Supplements</option><option>CBD & Cannabis</option><option>Financial Services</option>
+              <option>Digital Goods</option><option>Marketplaces</option><option>Retail & POS</option>
+              <option>Gaming & Esports</option><option>Dating & Social</option><option>Charities & NGOs</option><option>Healthcare</option>
+            </select>
+          </div>
+          <div class="fi"><label>Monthly Volume</label>
+            <select><option value="">— Select range —</option><option>Under $10K</option><option>$10K–$50K</option><option>$50K–$200K</option><option>$200K–$1M</option><option>$1M+</option></select>
+          </div>
+          <div class="fi"><label>Primary Region</label>
+            <select><option value="">— Select —</option><option>Global</option><option>Europe</option><option>North America</option><option>Asia-Pacific</option><option>Latin America</option><option>Middle East & Africa</option></select>
+          </div>
+          <div class="fi full"><label>Tell us about your business</label><textarea placeholder="Describe your business model, current challenges, and what you're looking for..."></textarea></div>
+          <div class="fi full"><button class="submit-btn" onclick="submitInquiry()">🚀 Submit Inquiry — Get Matched Free</button></div>
+        </div>
+      </div>
+      <div class="form-success" id="iqSuccess">
+        <div class="icon">✅</div>
+        <h3>Inquiry Submitted!</h3>
+        <p>We'll review your requirements and connect you with the best payment partners within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Pay<span>Finder</span></div>
+  <p>The most comprehensive payment provider directory — PSPs, Acquirers, ISOs, EMIs & Gateways.</p>
+  <p style="margin-top:8px;">© 2026 PayFinder. All rights reserved.</p>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <div id="mType"></div>
+      <div class="modal-name" id="mName"></div>
+      <div class="modal-hq" id="mHQ"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section"><h4>About</h4><p id="mDesc"></p></div>
+      <div class="modal-section">
+        <h4>Key Details</h4>
+        <div class="modal-grid">
+          <div class="modal-item"><label>Type</label><span id="mT"></span></div>
+          <div class="modal-item"><label>Risk Appetite</label><span id="mRisk"></span></div>
+          <div class="modal-item"><label>Regions Served</label><span id="mRegion"></span></div>
+          <div class="modal-item"><label>Currencies</label><span id="mCurrency"></span></div>
+          <div class="modal-item"><label>Setup Time</label><span id="mSetup"></span></div>
+          <div class="modal-item"><label>Processing Fees</label><span id="mFees"></span></div>
+        </div>
+      </div>
+      <div class="modal-section"><h4>Supported Industries / MCCs</h4><div class="modal-tags" id="mMCCs"></div></div>
+      <div class="modal-section"><h4>Payment Methods</h4><div class="modal-tags" id="mMethods"></div></div>
+    </div>
+    <div class="modal-footer">
+      <a id="mWebsite" href="#" target="_blank" class="btn-website">🌐 Visit Website</a>
+      <a id="mEmail" href="#" class="btn-email">✉️ Send Inquiry</a>
+      <button class="btn-secondary" onclick="closeModalDirect()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const P=[
+  {name:"Stripe",type:"PSP",hq:"San Francisco, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"Instant",fees:"2.9% + $0.30",mccs:["eCommerce","SaaS & Subscriptions","Digital Goods","Marketplaces","Gaming & Esports"],methods:["Cards","SEPA","ACH","Apple Pay","Google Pay"],desc:"Leading global PSP offering a developer-first API platform with extensive payment method support across 135+ currencies.",website:"https://stripe.com",email:"sales@stripe.com"},
+  {name:"Adyen",type:"PSP",hq:"Amsterdam, Netherlands",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Interchange++",mccs:["eCommerce","Retail & POS","Travel & Airlines","Marketplaces","SaaS & Subscriptions"],methods:["Cards","iDEAL","SEPA","Apple Pay","Alipay","WeChat Pay"],desc:"Enterprise-grade unified commerce platform supporting online, in-store, and mobile payments for global brands.",website:"https://adyen.com",email:"sales@adyen.com"},
+  {name:"Braintree",type:"PSP",hq:"Chicago, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"3–5 days",fees:"2.59% + $0.49",mccs:["eCommerce","Marketplaces","SaaS & Subscriptions","Digital Goods"],methods:["Cards","PayPal","Venmo","ACH","Apple Pay","Google Pay"],desc:"PayPal-owned PSP offering seamless card vault, recurring billing, and marketplace payment solutions.",website:"https://braintreepayments.com",email:"sales@braintreepayments.com"},
+  {name:"PayPal",type:"PSP",hq:"San Jose, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"Instant",fees:"3.49% + fixed fee",mccs:["eCommerce","Digital Goods","Charities & NGOs","Retail & POS"],methods:["PayPal","Cards","Pay Later","Venmo","BNPL"],desc:"World's largest digital payments platform with 400M+ active accounts and strong buyer/seller protection.",website:"https://paypal.com/business",email:"merchantservices@paypal.com"},
+  {name:"Square",type:"PSP",hq:"San Francisco, USA",region:"North America",risk:"Low",currencies:"USD,CAD,AUD,GBP,JPY",setup:"Instant",fees:"2.6% + $0.10",mccs:["Retail & POS","eCommerce","Healthcare","Charities & NGOs"],methods:["Cards","Apple Pay","Google Pay","ACH","Cash App Pay"],desc:"Integrated POS and online payment platform designed for SMBs, offering hardware, software, and financial services.",website:"https://squareup.com",email:"sales@squareup.com"},
+  {name:"Worldpay",type:"PSP",hq:"Cincinnati, USA",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","Online Gambling & Gaming","Financial Services"],methods:["Cards","PayPal","SEPA","ACH","Alipay","Klarna"],desc:"One of the world's largest payment processors handling 40B+ transactions annually across 146 countries.",website:"https://worldpay.com",email:"sales@worldpay.com"},
+  {name:"Checkout.com",type:"PSP",hq:"London, UK",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Forex & FX Trading","Crypto & Web3","Digital Goods","Travel & Airlines"],methods:["Cards","SEPA","iDEAL","Sofort","Apple Pay","Google Pay","Klarna"],desc:"High-performance payment platform built for digital businesses needing advanced fraud protection and global reach.",website:"https://checkout.com",email:"sales@checkout.com"},
+  {name:"Nuvei",type:"PSP",hq:"Montreal, Canada",region:"Global",risk:"High",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["Online Gambling & Gaming","Forex & FX Trading","Crypto & Web3","eCommerce","Travel & Airlines"],methods:["Cards","APMs","Crypto","Local methods","SEPA"],desc:"Specialized PSP for regulated industries with deep expertise in igaming, forex, and cryptocurrency payments.",website:"https://nuvei.com",email:"sales@nuvei.com"},
+  {name:"Paysafe",type:"PSP",hq:"London, UK",region:"Global",risk:"High",currencies:"Multi-currency",setup:"2–4 weeks",fees:"Custom",mccs:["Online Gambling & Gaming","Adult / High-Risk","Forex & FX Trading","Digital Goods","Gaming & Esports"],methods:["Cards","Skrill","NETELLER","paysafecard","ACH"],desc:"Specialist payment provider with strong presence in high-risk verticals including gambling, adult, and forex.",website:"https://paysafe.com",email:"merchantsupport@paysafe.com"},
+  {name:"Klarna",type:"PSP",hq:"Stockholm, Sweden",region:"Europe",risk:"Low",currencies:"EUR,USD,GBP,SEK,NOK",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Retail & POS","Digital Goods","Travel & Airlines"],methods:["BNPL","Cards","Pay in 3","Pay Later","Financing"],desc:"Leading BNPL and checkout solution helping retailers increase conversion with flexible payment options.",website:"https://klarna.com/business",email:"merchant@klarna.com"},
+  {name:"Mollie",type:"PSP",hq:"Amsterdam, Netherlands",region:"Europe",risk:"Low",currencies:"EUR,GBP,USD",setup:"Instant",fees:"From €0.25+%",mccs:["eCommerce","SaaS & Subscriptions","Charities & NGOs","Digital Goods"],methods:["iDEAL","Cards","Bancontact","SEPA","Klarna","Apple Pay"],desc:"European-focused PSP beloved by SMBs for transparent pricing and easy integration with 30+ payment methods.",website:"https://mollie.com",email:"sales@mollie.com"},
+  {name:"Payoneer",type:"PSP",hq:"New York, USA",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"1–3 days",fees:"From 1%",mccs:["Marketplaces","Digital Goods","eCommerce","SaaS & Subscriptions"],methods:["Cards","ACH","SEPA","Wire","Local bank transfers"],desc:"Cross-border payment platform for freelancers, marketplaces, and digital businesses in 190+ countries.",website:"https://payoneer.com",email:"sales@payoneer.com"},
+  {name:"2Checkout (Verifone)",type:"PSP",hq:"Columbus, USA",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"2–5 days",fees:"3.5% + $0.35",mccs:["SaaS & Subscriptions","Digital Goods","eCommerce","Gaming & Esports"],methods:["Cards","PayPal","SEPA","Alipay","Local APMs"],desc:"Global monetization platform specializing in software, SaaS, and digital goods with subscription management.",website:"https://2checkout.com",email:"sales@2checkout.com"},
+  {name:"PayU",type:"PSP",hq:"Amsterdam, Netherlands",region:"Asia-Pacific",risk:"Medium",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Digital Goods","Travel & Airlines","Financial Services"],methods:["Cards","UPI","Net Banking","Wallets","EMI"],desc:"Leading PSP across emerging markets in India, Eastern Europe, Latin America, and Southeast Asia.",website:"https://payu.com",email:"merchantsupport@payu.com"},
+  {name:"Razorpay",type:"PSP",hq:"Bangalore, India",region:"Asia-Pacific",risk:"Low",currencies:"INR,USD",setup:"Instant",fees:"2% per transaction",mccs:["eCommerce","SaaS & Subscriptions","Digital Goods","Marketplaces","Healthcare"],methods:["UPI","Cards","Net Banking","Wallets","BNPL","EMI"],desc:"India's leading full-stack financial solutions platform powering payments for 500K+ businesses.",website:"https://razorpay.com",email:"support@razorpay.com"},
+  {name:"Mercado Pago",type:"PSP",hq:"Buenos Aires, Argentina",region:"Latin America",risk:"Medium",currencies:"BRL,ARS,MXN,CLP,COP",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Marketplaces","Retail & POS","Digital Goods"],methods:["Cards","PIX","Boleto","OXXO","QR Code","Wallets"],desc:"Dominant payment platform across Latin America with 45M+ active users and deep local payment method coverage.",website:"https://mercadopago.com",email:"vendedores@mercadopago.com"},
+  {name:"Flutterwave",type:"PSP",hq:"San Francisco, USA",region:"Middle East & Africa",risk:"Medium",currencies:"USD,NGN,GHS,KES,ZAR",setup:"3–7 days",fees:"1.4% local/3.8% intl",mccs:["eCommerce","Digital Goods","Financial Services","Travel & Airlines","Marketplaces"],methods:["Cards","Mobile Money","USSD","Bank Transfer","POS"],desc:"Africa's leading payment infrastructure connecting the continent to the global economy for 900K+ businesses.",website:"https://flutterwave.com",email:"hello@flutterwave.com"},
+  {name:"Paystack",type:"PSP",hq:"Lagos, Nigeria",region:"Middle East & Africa",risk:"Low",currencies:"NGN,GHS,ZAR,KES",setup:"Instant",fees:"1.5% + ₦100",mccs:["eCommerce","SaaS & Subscriptions","Charities & NGOs","Digital Goods"],methods:["Cards","Bank Transfer","USSD","Mobile Money","QR"],desc:"Stripe-acquired African PSP making payments simple for businesses across Ghana, Nigeria, South Africa, and Kenya.",website:"https://paystack.com",email:"sales@paystack.com"},
+  {name:"PaymentCloud",type:"PSP",hq:"Los Angeles, USA",region:"North America",risk:"High",currencies:"USD,CAD",setup:"3–7 days",fees:"Custom",mccs:["Adult / High-Risk","Pharmaceuticals","Nutraceuticals & Supplements","CBD & Cannabis","Online Gambling & Gaming"],methods:["Cards","ACH","eCheck","Crypto"],desc:"Specialist high-risk PSP focused on difficult-to-place merchants in adult, pharma, CBD, and gaming sectors.",website:"https://paymentcloudinc.com",email:"support@paymentcloudinc.com"},
+  {name:"CCBill",type:"PSP",hq:"Tempe, USA",region:"Global",risk:"High",currencies:"USD,EUR,GBP",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Digital Goods","SaaS & Subscriptions","Dating & Social"],methods:["Cards","ACH","eCheck","Wire"],desc:"Industry leader for adult and subscription-based content monetization with 20+ years of experience.",website:"https://ccbill.com",email:"sales@ccbill.com"},
+  {name:"Epoch",type:"PSP",hq:"Los Angeles, USA",region:"Global",risk:"High",currencies:"USD,EUR,GBP",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Digital Goods","SaaS & Subscriptions","Dating & Social"],methods:["Cards","ACH","eCheck","Wire","PayPal"],desc:"Veteran billing service for adult and digital content subscriptions with strong chargeback management tools.",website:"https://epoch.com",email:"merchants@epoch.com"},
+  {name:"SegPay",type:"PSP",hq:"Deerfield Beach, USA",region:"Global",risk:"High",currencies:"USD,EUR,GBP",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","SaaS & Subscriptions","Digital Goods","Dating & Social"],methods:["Cards","ACH","eCheck","Wire"],desc:"Specialized payment processor for adult and subscription merchants with advanced recurring billing tools.",website:"https://segpay.com",email:"sales@segpay.com"},
+  {name:"Coinbase Commerce",type:"PSP",hq:"San Francisco, USA",region:"Global",risk:"Medium",currencies:"Crypto",setup:"Instant",fees:"1%",mccs:["Crypto & Web3","eCommerce","Digital Goods","SaaS & Subscriptions"],methods:["Bitcoin","Ethereum","USDC","Litecoin","DAI"],desc:"Crypto payment gateway allowing merchants to accept multiple cryptocurrencies with self-custody of funds.",website:"https://commerce.coinbase.com",email:"commerce@coinbase.com"},
+  {name:"BitPay",type:"PSP",hq:"Atlanta, USA",region:"Global",risk:"Medium",currencies:"Crypto+USD",setup:"2–5 days",fees:"1%",mccs:["Crypto & Web3","eCommerce","Digital Goods","Travel & Airlines"],methods:["Bitcoin","Ethereum","XRP","Stablecoins","Bitcoin Cash"],desc:"Pioneer crypto payment processor enabling businesses to accept digital currencies with instant fiat settlement.",website:"https://bitpay.com",email:"sales@bitpay.com"},
+  {name:"Unlimint",type:"PSP",hq:"London, UK",region:"Global",risk:"High",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["Forex & FX Trading","Online Gambling & Gaming","Crypto & Web3","eCommerce","Travel & Airlines"],methods:["Cards","SEPA","ACH","Local APMs","Crypto"],desc:"Global payment solution for high-risk businesses with banking licenses across multiple jurisdictions.",website:"https://unlimint.com",email:"sales@unlimint.com"},
+  {name:"Payneteasy",type:"PSP",hq:"Vilnius, Lithuania",region:"Europe",risk:"High",currencies:"EUR,USD,GBP",setup:"1–2 weeks",fees:"Custom",mccs:["Forex & FX Trading","Online Gambling & Gaming","Adult / High-Risk","eCommerce","Crypto & Web3"],methods:["Cards","SEPA","Wire","Local APMs"],desc:"European payment gateway specializing in high-risk merchant accounts with multi-currency processing capabilities.",website:"https://payneteasy.com",email:"sales@payneteasy.com"},
+  {name:"Corefy",type:"PSP",hq:"London, UK",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Forex & FX Trading","Online Gambling & Gaming","SaaS & Subscriptions"],methods:["Cards","SEPA","ACH","Crypto","Local APMs"],desc:"Payment orchestration platform aggregating 400+ payment providers for routing, failover, and smart payment management.",website:"https://corefy.com",email:"sales@corefy.com"},
+  {name:"Xendit",type:"PSP",hq:"Jakarta, Indonesia",region:"Asia-Pacific",risk:"Medium",currencies:"IDR,PHP,MYR,THB,VND",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Financial Services","SaaS & Subscriptions","Digital Goods","Marketplaces"],methods:["Bank Transfer","Cards","e-Wallets","OTC","QR Code","BNPL"],desc:"Southeast Asia's leading payment infrastructure with full financial services stack across Indonesia and Philippines.",website:"https://xendit.co",email:"hello@xendit.co"},
+  {name:"dLocal",type:"PSP",hq:"Montevideo, Uruguay",region:"Latin America",risk:"Medium",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Marketplaces","Digital Goods","SaaS & Subscriptions","Travel & Airlines"],methods:["Cards","PIX","Boleto","OXXO","SPEI","Local APMs"],desc:"Emerging markets payment platform enabling global enterprises to accept and send payments in 40+ countries.",website:"https://dlocal.com",email:"sales@dlocal.com"},
+  {name:"Bambora (Worldline)",type:"PSP",hq:"Stockholm, Sweden",region:"Europe",risk:"Low",currencies:"EUR,SEK,NOK,DKK,CAD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","Healthcare","SaaS & Subscriptions"],methods:["Cards","SEPA","Swish","Vipps","MobilePay"],desc:"Nordic payment specialist offering integrated in-store and online solutions across Scandinavia and Europe.",website:"https://bambora.com",email:"sales@bambora.com"},
+  {name:"Eway",type:"PSP",hq:"Sydney, Australia",region:"Asia-Pacific",risk:"Low",currencies:"AUD,NZD",setup:"Instant",fees:"From 1.5%",mccs:["eCommerce","SaaS & Subscriptions","Retail & POS","Healthcare","Charities & NGOs"],methods:["Cards","Apple Pay","Google Pay","BNPL"],desc:"Australia's trusted payment gateway processing $A30B+ annually with industry-leading 99.99% uptime.",website:"https://eway.io",email:"sales@eway.io"},
+  {name:"Kushki",type:"PSP",hq:"Quito, Ecuador",region:"Latin America",risk:"Medium",currencies:"COP,MXN,PEN,CLP,USD",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Financial Services","SaaS & Subscriptions","Digital Goods"],methods:["Cards","Bank Transfer","PSE","SPEI","Cash"],desc:"Latin American payment infrastructure providing unified API for payments across Colombia, Mexico, Peru, and Chile.",website:"https://kushki.com",email:"sales@kushki.com"},
+  {name:"Payssion",type:"PSP",hq:"Hong Kong",region:"Asia-Pacific",risk:"Medium",currencies:"Multi-currency",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Digital Goods","Gaming & Esports","SaaS & Subscriptions"],methods:["Local APMs","Alipay","WeChat Pay","UnionPay","Bank Transfer"],desc:"APM aggregator with 200+ local payment methods across Asia Pacific, Europe, and Americas.",website:"https://payssion.com",email:"sales@payssion.com"},
+  {name:"PayTabs",type:"PSP",hq:"Riyadh, Saudi Arabia",region:"Middle East & Africa",risk:"Medium",currencies:"SAR,AED,USD,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Travel & Airlines","Financial Services","Healthcare","Retail & POS"],methods:["Cards","mada","KNET","SADAD","Apple Pay","STC Pay"],desc:"MENA-focused payment gateway supporting Arabic interfaces and local payment methods across the Gulf region.",website:"https://paytabs.com",email:"sales@paytabs.com"},
+  {name:"Sticpay",type:"PSP",hq:"London, UK",region:"Global",risk:"High",currencies:"Multi-currency",setup:"1–3 days",fees:"Custom",mccs:["Online Gambling & Gaming","Forex & FX Trading","Adult / High-Risk","Crypto & Web3"],methods:["Cards","Wallets","Crypto","Bank Transfer"],desc:"E-wallet and payment solution targeting forex, gambling, and high-risk merchants with instant transfer capabilities.",website:"https://sticpay.com",email:"support@sticpay.com"},
+  {name:"iPay88",type:"PSP",hq:"Kuala Lumpur, Malaysia",region:"Asia-Pacific",risk:"Medium",currencies:"MYR,SGD,THB,PHP,IDR",setup:"5–10 days",fees:"Custom",mccs:["eCommerce","Travel & Airlines","Digital Goods","Retail & POS"],methods:["FPX","Cards","GrabPay","Touch n Go","Boost"],desc:"Southeast Asia's established payment gateway supporting local payment methods across Malaysia, Singapore, and Thailand.",website:"https://ipay88.com",email:"sales@ipay88.com"},
+  {name:"Paytm Payments",type:"PSP",hq:"Noida, India",region:"Asia-Pacific",risk:"Low",currencies:"INR",setup:"2–5 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Digital Goods","Travel & Airlines","Healthcare"],methods:["UPI","Wallets","Cards","Net Banking","QR Code"],desc:"India's largest digital payments platform with 300M+ registered users and deep merchant ecosystem.",website:"https://paytm.com/business",email:"pgmerchant@paytm.com"},
+  {name:"Durango Merchant Services",type:"PSP",hq:"Durango, USA",region:"North America",risk:"High",currencies:"USD,CAD,EUR",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Pharmaceuticals","Nutraceuticals & Supplements","CBD & Cannabis","Forex & FX Trading"],methods:["Cards","ACH","eCheck","Crypto"],desc:"Experienced high-risk merchant services provider with 25+ years specializing in hard-to-place merchant accounts.",website:"https://durangomerchantservices.com",email:"service@durangomerchantservices.com"},
+  {name:"WooCommerce Payments",type:"PSP",hq:"San Francisco, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"Instant",fees:"2.9% + $0.30",mccs:["eCommerce","Digital Goods","Retail & POS","Charities & NGOs"],methods:["Cards","Apple Pay","Google Pay","BNPL"],desc:"Native payment solution for WooCommerce stores built on Stripe infrastructure with seamless dashboard integration.",website:"https://woocommerce.com/payments",email:"support@woocommerce.com"},
+  {name:"Shopify Payments",type:"PSP",hq:"Ottawa, Canada",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"Instant",fees:"2.4–2.9%",mccs:["eCommerce","Retail & POS","Digital Goods"],methods:["Cards","Apple Pay","Google Pay","Shop Pay","BNPL"],desc:"Integrated payment solution for Shopify merchants eliminating third-party transaction fees with unified reporting.",website:"https://shopify.com/payments",email:"support@shopify.com"},
+  {name:"Nets (Nexi Group)",type:"PSP",hq:"Copenhagen, Denmark",region:"Europe",risk:"Low",currencies:"EUR,DKK,NOK,SEK",setup:"1–2 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Charities & NGOs","Financial Services"],methods:["Cards","MobilePay","Vipps","SEPA","Contactless"],desc:"Nordic payment infrastructure leader serving 700K+ merchants with POS, online, and open banking solutions.",website:"https://nets.eu",email:"sales@nets.eu"},
+  // ACQUIRERS
+  {name:"Chase Paymentech",type:"Acquirer",hq:"New York, USA",region:"North America",risk:"Low",currencies:"USD,CAD",setup:"2–4 weeks",fees:"Interchange+",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","Discover","ACH"],desc:"JPMorgan Chase's acquiring division, one of the largest in North America processing 50B+ transactions annually.",website:"https://jpmorgan.com/payments",email:"paymentech@chase.com"},
+  {name:"Bank of America Merchant Services",type:"Acquirer",hq:"Charlotte, USA",region:"North America",risk:"Low",currencies:"USD",setup:"2–4 weeks",fees:"Interchange+",mccs:["Retail & POS","eCommerce","Healthcare","Financial Services","Travel & Airlines"],methods:["Visa","Mastercard","Amex","Discover","Debit"],desc:"Top-tier US acquirer offering integrated banking and merchant services to businesses of all sizes.",website:"https://bofamerchantservices.com",email:"merchantservices@bankofamerica.com"},
+  {name:"Barclaycard",type:"Acquirer",hq:"London, UK",region:"Europe",risk:"Low",currencies:"GBP,EUR",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Charities & NGOs"],methods:["Visa","Mastercard","Amex","Contactless","Apple Pay"],desc:"UK's leading card acquirer offering integrated payment solutions for SMBs and enterprise merchants.",website:"https://barclaycard.co.uk/business",email:"businesssupport@barclaycard.co.uk"},
+  {name:"Elavon",type:"Acquirer",hq:"Atlanta, USA",region:"Global",risk:"Low",currencies:"USD,EUR,GBP,CAD",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Travel & Airlines","Hospitality"],methods:["Visa","Mastercard","Amex","Discover","Contactless","Mobile Pay"],desc:"US Bancorp subsidiary offering acquiring services to 1.3M+ merchants across North America and Europe.",website:"https://elavon.com",email:"sales@elavon.com"},
+  {name:"Global Payments",type:"Acquirer",hq:"Atlanta, USA",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Gaming & Esports","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","UnionPay","Local APMs"],desc:"Fortune 500 payment technology company serving 3.5M+ merchants in 100+ countries with unified commerce solutions.",website:"https://globalpayments.com",email:"sales@globalpayments.com"},
+  {name:"Fiserv (First Data)",type:"Acquirer",hq:"Milwaukee, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","Discover","Clover POS"],desc:"World's leading payment and financial technology company processing 12,000 transactions per second globally.",website:"https://fiserv.com",email:"sales@fiserv.com"},
+  {name:"Worldline",type:"Acquirer",hq:"Bezons, France",region:"Europe",risk:"Low",currencies:"EUR,CHF,PLN,CZK",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Cards","Contactless","SEPA","Twint","iDEAL"],desc:"Europe's largest payment service provider and acquirer processing 20B+ transactions annually across 50+ countries.",website:"https://worldline.com",email:"contact@worldline.com"},
+  {name:"Clearhaus",type:"Acquirer",hq:"Copenhagen, Denmark",region:"Europe",risk:"Medium",currencies:"EUR,DKK,SEK,NOK,GBP",setup:"1–2 weeks",fees:"From 0.25%",mccs:["eCommerce","SaaS & Subscriptions","Online Gambling & Gaming","Forex & FX Trading","Digital Goods"],methods:["Visa","Mastercard","Amex"],desc:"Nordic acquiring bank focused on internet businesses with fast onboarding and transparent pricing.",website:"https://clearhaus.com",email:"hello@clearhaus.com"},
+  {name:"Credorax",type:"Acquirer",hq:"Malta",region:"Europe",risk:"Medium",currencies:"EUR,USD,GBP",setup:"2–4 weeks",fees:"Custom",mccs:["eCommerce","Forex & FX Trading","Online Gambling & Gaming","SaaS & Subscriptions"],methods:["Visa","Mastercard","SEPA"],desc:"EU-licensed acquiring bank specializing in card-not-present transactions for digital and regulated businesses.",website:"https://credorax.com",email:"sales@credorax.com"},
+  {name:"UnionPay International",type:"Acquirer",hq:"Shanghai, China",region:"Asia-Pacific",risk:"Low",currencies:"CNY,USD,HKD,SGD",setup:"4–8 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Digital Goods"],methods:["UnionPay","QuickPass","Online Payment"],desc:"China's dominant card scheme and acquirer with 9B+ cards issued and acceptance in 180+ countries.",website:"https://unionpayintl.com",email:"merchantsupport@unionpayintl.com"},
+  {name:"Lloyds Cardnet",type:"Acquirer",hq:"London, UK",region:"UK",risk:"Low",currencies:"GBP",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Charities & NGOs"],methods:["Visa","Mastercard","Amex","Contactless"],desc:"Lloyds Banking Group's merchant acquiring arm serving 60,000+ UK businesses with in-store and online solutions.",website:"https://lloydsbank.com/business/cards-and-payments",email:"cardnet@lloydsbank.com"},
+  {name:"Ingenico (Worldline)",type:"Acquirer",hq:"Paris, France",region:"Europe",risk:"Low",currencies:"EUR,GBP,USD",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Cards","Contactless","SEPA","Local APMs"],desc:"European payment technology leader providing payment terminals and acquiring solutions to 1M+ merchants.",website:"https://ingenico.com",email:"sales@ingenico.com"},
+  {name:"NAB Transact",type:"Acquirer",hq:"Melbourne, Australia",region:"Asia-Pacific",risk:"Low",currencies:"AUD,NZD",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Travel & Airlines","Charities & NGOs"],methods:["Visa","Mastercard","Amex","Eftpos","Contactless"],desc:"Australia's business bank offering integrated merchant services and acquiring to 100,000+ Australian businesses.",website:"https://nab.com.au/business/payments",email:"merchantservices@nab.com.au"},
+  {name:"Santander Elavon",type:"Acquirer",hq:"Madrid, Spain",region:"Europe",risk:"Low",currencies:"EUR,GBP",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare"],methods:["Visa","Mastercard","Amex","Contactless","Bizum"],desc:"Joint venture between Santander and Elavon serving Iberian and European merchants with integrated banking solutions.",website:"https://santander.com/merchants",email:"tpe@santander.com"},
+  {name:"Getnet (PagoNxt)",type:"Acquirer",hq:"São Paulo, Brazil",region:"Latin America",risk:"Medium",currencies:"BRL,EUR",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","SaaS & Subscriptions","Marketplaces"],methods:["Cards","PIX","Boleto","QR Code"],desc:"Santander's Brazilian acquiring arm serving 1M+ merchants with omnichannel payment solutions.",website:"https://getnet.com.br",email:"contato@getnet.com.br"},
+  {name:"Standard Bank Acquiring",type:"Acquirer",hq:"Johannesburg, South Africa",region:"Middle East & Africa",risk:"Medium",currencies:"ZAR,USD",setup:"3–6 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","Contactless"],desc:"Africa's largest bank by assets offering merchant acquiring and payment solutions across 20+ African countries.",website:"https://standardbank.co.za/business",email:"merchantservices@standardbank.co.za"},
+  {name:"Emirates NBD Merchant Services",type:"Acquirer",hq:"Dubai, UAE",region:"Middle East & Africa",risk:"Low",currencies:"AED,USD,EUR",setup:"3–6 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","Apple Pay","Samsung Pay"],desc:"Leading UAE bank providing merchant acquiring services to businesses across the UAE and broader MENA region.",website:"https://emiratesnbd.com/business/merchant-services",email:"merchantservices@emiratesnbd.com"},
+  {name:"Nets Denmark",type:"Acquirer",hq:"Copenhagen, Denmark",region:"Europe",risk:"Low",currencies:"DKK,EUR,SEK,NOK",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Travel & Airlines"],methods:["Visa","Mastercard","MobilePay","Contactless","Dankort"],desc:"Denmark's national acquirer and infrastructure provider handling 80%+ of Danish card transactions.",website:"https://nets.eu",email:"merchants@nets.eu"},
+  {name:"Deutsche Bank Acquiring",type:"Acquirer",hq:"Frankfurt, Germany",region:"Europe",risk:"Low",currencies:"EUR,USD",setup:"3–6 weeks",fees:"Custom",mccs:["eCommerce","Retail & POS","Financial Services","Travel & Airlines"],methods:["Visa","Mastercard","SEPA","Giropay","Contactless"],desc:"Germany's largest bank offering merchant acquiring with deep European market expertise and local payment methods.",website:"https://deutschebank.com/merchants",email:"merchantservices@db.com"},
+  {name:"Banco Bradesco Acquiring",type:"Acquirer",hq:"São Paulo, Brazil",region:"Latin America",risk:"Low",currencies:"BRL",setup:"2–4 weeks",fees:"Custom",mccs:["Retail & POS","eCommerce","Travel & Airlines","Healthcare","Financial Services"],methods:["Visa","Mastercard","Elo","Amex","PIX"],desc:"Brazil's largest private bank offering comprehensive merchant acquiring with deep local market expertise.",website:"https://bradesco.com.br/merchants",email:"merchants@bradesco.com.br"},
+  // ISOs
+  {name:"North American Bancard",type:"ISO",hq:"Troy, USA",region:"North America",risk:"Medium",currencies:"USD,CAD",setup:"3–7 days",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Nutraceuticals & Supplements"],methods:["Cards","ACH","eCheck","Apple Pay","Google Pay"],desc:"One of the largest ISOs in the US serving 350,000+ merchants with payment acceptance, funding, and equipment.",website:"https://northamericanbancard.com",email:"sales@northamericanbancard.com"},
+  {name:"Payroc",type:"ISO",hq:"Chicago, USA",region:"North America",risk:"Medium",currencies:"USD,CAD",setup:"3–7 days",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Travel & Airlines"],methods:["Cards","ACH","Apple Pay","Google Pay","Contactless"],desc:"Comprehensive ISO offering omnichannel payment solutions, same-day funding, and dedicated merchant support.",website:"https://payroc.com",email:"sales@payroc.com"},
+  {name:"Signature Payments",type:"ISO",hq:"Las Vegas, USA",region:"North America",risk:"High",currencies:"USD",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Online Gambling & Gaming","Nutraceuticals & Supplements","CBD & Cannabis","Pharmaceuticals"],methods:["Cards","ACH","eCheck","Crypto"],desc:"High-risk ISO specializing in adult, gambling, nutraceuticals, and other difficult-to-place merchant accounts.",website:"https://signaturepayments.com",email:"apply@signaturepayments.com"},
+  {name:"Maverick BankCard",type:"ISO",hq:"Sherman Oaks, USA",region:"North America",risk:"High",currencies:"USD",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Pharmaceuticals","Nutraceuticals & Supplements","CBD & Cannabis","Dating & Social"],methods:["Cards","ACH","eCheck"],desc:"Veteran high-risk ISO providing merchant accounts for challenging industries with personalized underwriting.",website:"https://maverickbankcard.com",email:"sales@maverickbankcard.com"},
+  {name:"EMS (European Merchant Services)",type:"ISO",hq:"Amsterdam, Netherlands",region:"Europe",risk:"Medium",currencies:"EUR,GBP",setup:"5–10 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","Hospitality","SaaS & Subscriptions"],methods:["Cards","iDEAL","SEPA","Contactless"],desc:"Pan-European ISO providing multi-acquirer solutions for merchants seeking competitive European acquiring rates.",website:"https://ems.nl",email:"merchants@ems.nl"},
+  {name:"Cardstream",type:"ISO",hq:"Cardiff, UK",region:"UK",risk:"Medium",currencies:"GBP,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Digital Goods","Retail & POS"],methods:["Cards","Apple Pay","Google Pay","SEPA"],desc:"UK-based ISO offering white-label payment gateway solutions to ISVs, VARs, and merchant acquirers.",website:"https://cardstream.com",email:"sales@cardstream.com"},
+  {name:"HighRiskPay",type:"ISO",hq:"Scottsdale, USA",region:"North America",risk:"High",currencies:"USD",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Online Gambling & Gaming","Pharmaceuticals","Nutraceuticals & Supplements","Forex & FX Trading"],methods:["Cards","ACH","eCheck"],desc:"Dedicated high-risk ISO connecting merchants with banking partners willing to support restricted industries.",website:"https://highriskpay.com",email:"apply@highriskpay.com"},
+  {name:"PayKings",type:"ISO",hq:"Orlando, USA",region:"North America",risk:"High",currencies:"USD",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Nutraceuticals & Supplements","CBD & Cannabis","Dating & Social","Online Gambling & Gaming"],methods:["Cards","ACH","eCheck"],desc:"High-risk specialist ISO with access to 20+ banking relationships for adult, nutraceuticals, and gaming merchants.",website:"https://paykings.com",email:"sales@paykings.com"},
+  {name:"Total Processing",type:"ISO",hq:"Manchester, UK",region:"UK",risk:"Medium",currencies:"GBP,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Charities & NGOs","Digital Goods","Retail & POS"],methods:["Cards","Open Banking","Apple Pay","Google Pay","BACS"],desc:"UK ISO providing developer-friendly payment APIs for ecommerce and subscription businesses.",website:"https://totalprocessing.com",email:"sales@totalprocessing.com"},
+  {name:"Payscout",type:"ISO",hq:"Chicago, USA",region:"Global",risk:"Medium",currencies:"USD,EUR,GBP",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Healthcare","Financial Services","SaaS & Subscriptions","Charities & NGOs"],methods:["Cards","ACH","Wire","Local APMs"],desc:"Global ISO and acquirer focused on cross-border payments and healthcare billing solutions.",website:"https://payscout.com",email:"info@payscout.com"},
+  {name:"eMerchantBroker",type:"ISO",hq:"Los Angeles, USA",region:"North America",risk:"High",currencies:"USD",setup:"5–10 days",fees:"Custom",mccs:["Adult / High-Risk","Online Gambling & Gaming","CBD & Cannabis","Pharmaceuticals","Nutraceuticals & Supplements"],methods:["Cards","ACH","eCheck","Crypto"],desc:"Leading high-risk ISO with 99% approval rate and expertise in high-chargeback merchant account placement.",website:"https://emerchantbroker.com",email:"apply@emerchantbroker.com"},
+  {name:"Payline Data",type:"ISO",hq:"Chicago, USA",region:"North America",risk:"Low",currencies:"USD",setup:"3–7 days",fees:"Interchange+",mccs:["eCommerce","Healthcare","Charities & NGOs","SaaS & Subscriptions","Retail & POS"],methods:["Cards","ACH","Apple Pay","Google Pay"],desc:"Transparent ISO offering interchange-plus pricing for healthcare, nonprofits, and ecommerce merchants.",website:"https://paylinedata.com",email:"sales@paylinedata.com"},
+  {name:"ProMerchant",type:"ISO",hq:"Boston, USA",region:"North America",risk:"Medium",currencies:"USD",setup:"3–7 days",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","SaaS & Subscriptions"],methods:["Cards","ACH","Apple Pay","Google Pay"],desc:"US ISO offering flat-rate and interchange-plus pricing with no long-term contracts for SMBs.",website:"https://promerchant.com",email:"sales@promerchant.com"},
+  {name:"Merchant One",type:"ISO",hq:"Miami, USA",region:"North America",risk:"Medium",currencies:"USD",setup:"3–7 days",fees:"From 0.29%",mccs:["Retail & POS","eCommerce","Healthcare","Travel & Airlines"],methods:["Cards","ACH","Apple Pay","Google Pay","Contactless"],desc:"Award-winning ISO with 98% approval rate and personalized underwriting for retail and online merchants.",website:"https://merchantone.com",email:"support@merchantone.com"},
+  {name:"Priority Commerce",type:"ISO",hq:"Alpharetta, USA",region:"North America",risk:"Medium",currencies:"USD",setup:"3–7 days",fees:"Custom",mccs:["Retail & POS","eCommerce","Healthcare","Financial Services"],methods:["Cards","ACH","Wallets","Contactless"],desc:"Tech-enabled ISO powering SMB payments through POS integrations, working capital, and embedded finance.",website:"https://prioritycommerce.com",email:"sales@prioritycommerce.com"},
+  {name:"Seamless Chex",type:"ISO",hq:"San Diego, USA",region:"North America",risk:"Medium",currencies:"USD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Digital Gift Cards","Financial Services"],methods:["ACH","eCheck","Cards"],desc:"ACH and check processing ISO offering fast bank-to-bank payments with enhanced fraud screening tools.",website:"https://seamlesschex.com",email:"sales@seamlesschex.com"},
+  {name:"Paybright",type:"ISO",hq:"Toronto, Canada",region:"North America",risk:"Low",currencies:"CAD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Healthcare"],methods:["BNPL","Cards","Bank Transfer"],desc:"Canadian ISO offering integrated BNPL and traditional card processing solutions for retail and service businesses.",website:"https://paybright.com",email:"merchants@paybright.com"},
+  {name:"Xpress-pay",type:"ISO",hq:"Norwood, USA",region:"North America",risk:"Low",currencies:"USD",setup:"3–7 days",fees:"Custom",mccs:["Healthcare","Charities & NGOs","Financial Services","eCommerce","Retail & POS"],methods:["Cards","ACH","eCheck","Wallets"],desc:"Specialized ISO for government, healthcare, and nonprofit organizations with compliance-first solutions.",website:"https://xpress-pay.com",email:"sales@xpress-pay.com"},
+  {name:"Pago46",type:"ISO",hq:"Buenos Aires, Argentina",region:"Latin America",risk:"Medium",currencies:"ARS,USD",setup:"5–10 days",fees:"Custom",mccs:["eCommerce","Digital Goods","Gaming & Esports","Financial Services"],methods:["Cash","Bank Transfer","Cards","Crypto"],desc:"Latin American ISO enabling cash-based online payments for the unbanked population across Argentina and beyond.",website:"https://pago46.com",email:"merchants@pago46.com"},
+  {name:"IRISCRM",type:"ISO",hq:"New York, USA",region:"North America",risk:"Medium",currencies:"USD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","SaaS & Subscriptions","Financial Services"],methods:["Cards","ACH","eCheck"],desc:"ISO-focused CRM and payment operations platform helping ISOs manage merchant portfolios and residuals.",website:"https://iriscrm.com",email:"sales@iriscrm.com"},
+  // EMIs
+  {name:"Revolut Business",type:"EMI",hq:"London, UK",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"Instant",fees:"From £0/mo",mccs:["eCommerce","SaaS & Subscriptions","Marketplaces","Financial Services","Digital Goods"],methods:["Cards","SEPA","SWIFT","Local transfers","Crypto"],desc:"Global neobank and EMI offering multi-currency accounts, cards, FX at interbank rates, and API banking for businesses.",website:"https://revolut.com/business",email:"business@revolut.com"},
+  {name:"Wise Business",type:"EMI",hq:"London, UK",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"1–3 days",fees:"From 0.41%",mccs:["Marketplaces","eCommerce","Financial Services","Digital Goods","SaaS & Subscriptions"],methods:["SEPA","SWIFT","Local transfers","Cards","Direct Debit"],desc:"Multi-currency account holding 50+ currencies with real mid-market exchange rates for international businesses.",website:"https://wise.com/business",email:"business@wise.com"},
+  {name:"Airwallex",type:"EMI",hq:"Melbourne, Australia",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"1–3 days",fees:"From 0.5%",mccs:["eCommerce","SaaS & Subscriptions","Marketplaces","Financial Services","Travel & Airlines"],methods:["SEPA","SWIFT","ACH","Cards","Local APMs"],desc:"Global payments and financial platform for businesses with local collection in 60+ countries and no FX markups.",website:"https://airwallex.com",email:"sales@airwallex.com"},
+  {name:"Modulr",type:"EMI",hq:"London, UK",region:"UK",risk:"Low",currencies:"GBP,EUR",setup:"1–2 weeks",fees:"Custom",mccs:["Financial Services","SaaS & Subscriptions","Marketplaces","eCommerce"],methods:["Faster Payments","BACS","SEPA","SWIFT","Cards"],desc:"API-first payments infrastructure for fintechs and platforms needing programmable bank accounts and instant payments.",website:"https://modulrfinance.com",email:"sales@modulrfinance.com"},
+  {name:"Bankera",type:"EMI",hq:"Vilnius, Lithuania",region:"Europe",risk:"High",currencies:"EUR,USD,GBP",setup:"1–2 weeks",fees:"Custom",mccs:["Crypto & Web3","Forex & FX Trading","eCommerce","Financial Services","Online Gambling & Gaming"],methods:["SEPA","SWIFT","SEPA Instant","Cards"],desc:"EU-licensed EMI specializing in crypto-friendly business accounts for blockchain, forex, and fintech companies.",website:"https://bankera.com",email:"business@bankera.com"},
+  {name:"Payset",type:"EMI",hq:"London, UK",region:"Europe",risk:"High",currencies:"EUR,GBP,USD",setup:"5–10 days",fees:"Custom",mccs:["Crypto & Web3","Forex & FX Trading","Online Gambling & Gaming","Adult / High-Risk","Financial Services"],methods:["SEPA","SWIFT","Faster Payments","SEPA Instant"],desc:"EMI providing IBAN accounts for high-risk businesses including crypto exchanges, gaming, and forex brokers.",website:"https://payset.io",email:"business@payset.io"},
+  {name:"Genome",type:"EMI",hq:"Vilnius, Lithuania",region:"Europe",risk:"High",currencies:"EUR,USD",setup:"5–10 days",fees:"Custom",mccs:["Forex & FX Trading","Crypto & Web3","Online Gambling & Gaming","eCommerce","Financial Services"],methods:["SEPA","SWIFT","SEPA Instant","Cards"],desc:"Lithuanian EMI offering multi-currency IBAN accounts tailored for forex brokers, igaming operators, and crypto firms.",website:"https://genome.eu",email:"business@genome.eu"},
+  {name:"PayDo",type:"EMI",hq:"London, UK",region:"Europe",risk:"High",currencies:"EUR,GBP,USD",setup:"5–10 days",fees:"Custom",mccs:["Forex & FX Trading","Online Gambling & Gaming","Crypto & Web3","eCommerce","Adult / High-Risk"],methods:["SEPA","SWIFT","SEPA Instant","Cards","Crypto"],desc:"EU-regulated EMI offering business IBANs for high-risk sectors with mass payouts, card issuing, and FX.",website:"https://paydo.com",email:"business@paydo.com"},
+  {name:"Wallester",type:"EMI",hq:"Tallinn, Estonia",region:"Europe",risk:"Medium",currencies:"EUR",setup:"1–2 weeks",fees:"Custom",mccs:["Financial Services","eCommerce","SaaS & Subscriptions","Corporate Expenses","Marketplaces"],methods:["Visa Cards","SEPA","Virtual Cards","White-label Cards"],desc:"EU-licensed EMI specializing in white-label Visa card programs, virtual cards, and corporate expense management.",website:"https://wallester.com",email:"sales@wallester.com"},
+  {name:"Nium",type:"EMI",hq:"Singapore",region:"Asia-Pacific",risk:"Medium",currencies:"Multi-currency",setup:"2–4 weeks",fees:"Custom",mccs:["Financial Services","Travel & Airlines","Marketplaces","eCommerce","SaaS & Subscriptions"],methods:["SEPA","SWIFT","Local ACH","Cards","Wallets"],desc:"Global payments infrastructure licensed in 40+ jurisdictions enabling real-time cross-border send, spend, and receive.",website:"https://nium.com",email:"sales@nium.com"},
+  {name:"Rapyd",type:"EMI",hq:"London, UK",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Marketplaces","Financial Services","SaaS & Subscriptions","Digital Goods"],methods:["Bank Transfer","Cards","Wallets","Cash","Local APMs"],desc:"Fintech-as-a-service platform aggregating local payment methods in 100+ countries with embedded finance capabilities.",website:"https://rapyd.net",email:"sales@rapyd.net"},
+  {name:"Clear Junction",type:"EMI",hq:"London, UK",region:"Europe",risk:"High",currencies:"GBP,EUR,USD",setup:"2–4 weeks",fees:"Custom",mccs:["Financial Services","Forex & FX Trading","Crypto & Web3","eCommerce","Online Gambling & Gaming"],methods:["Faster Payments","SEPA","SWIFT","CHAPS"],desc:"FCA-authorised EMI providing payment accounts for regulated fintech, FX, and crypto businesses.",website:"https://clearjunction.com",email:"business@clearjunction.com"},
+  {name:"Equals Money",type:"EMI",hq:"London, UK",region:"UK",risk:"Low",currencies:"GBP,EUR,USD",setup:"1–3 days",fees:"Custom",mccs:["Corporate Expenses","Travel & Airlines","eCommerce","Financial Services","Marketplaces"],methods:["Mastercard","SEPA","Faster Payments","SWIFT"],desc:"UK EMI offering multi-currency business accounts and prepaid corporate cards for expense management.",website:"https://equalsmoney.com",email:"business@equalsmoney.com"},
+  {name:"Railsr",type:"EMI",hq:"London, UK",region:"Europe",risk:"Medium",currencies:"GBP,EUR,USD",setup:"2–4 weeks",fees:"Custom",mccs:["Financial Services","eCommerce","SaaS & Subscriptions","Crypto & Web3","Marketplaces"],methods:["Cards","SEPA","Faster Payments","SWIFT"],desc:"Embedded finance platform enabling brands to launch banking, card, and payment products without a banking licence.",website:"https://railsr.com",email:"hello@railsr.com"},
+  {name:"Statrys",type:"EMI",hq:"Hong Kong",region:"Asia-Pacific",risk:"Medium",currencies:"HKD,USD,EUR,GBP,SGD",setup:"3–7 days",fees:"From HK$88/mo",mccs:["eCommerce","Financial Services","Digital Goods","Marketplaces","SaaS & Subscriptions"],methods:["SWIFT","SEPA","Local HK FPS","Visa Cards"],desc:"Hong Kong-based EMI providing multi-currency business accounts for SMEs in Asia with virtual and physical cards.",website:"https://statrys.com",email:"sales@statrys.com"},
+  {name:"Ecommpay",type:"EMI",hq:"London, UK",region:"Global",risk:"High",currencies:"EUR,GBP,USD",setup:"1–2 weeks",fees:"Custom",mccs:["Online Gambling & Gaming","Forex & FX Trading","Crypto & Web3","eCommerce","Adult / High-Risk"],methods:["Cards","SEPA","Local APMs","Crypto","E-wallets"],desc:"International payment service provider and EMI specializing in high-risk verticals with own processing infrastructure.",website:"https://ecommpay.com",email:"sales@ecommpay.com"},
+  {name:"Monese Business",type:"EMI",hq:"London, UK",region:"Europe",risk:"Low",currencies:"GBP,EUR,RON",setup:"Instant",fees:"From £9.95/mo",mccs:["eCommerce","SaaS & Subscriptions","Retail & POS","Charities & NGOs","Financial Services"],methods:["Visa","Faster Payments","SEPA","BACS"],desc:"Mobile-first EMI offering instant UK and EU business accounts with international money transfers at low cost.",website:"https://monese.com/business",email:"business@monese.com"},
+  {name:"Transact365",type:"EMI",hq:"London, UK",region:"Global",risk:"High",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["Online Gambling & Gaming","Forex & FX Trading","Adult / High-Risk","Crypto & Web3","Dating & Social"],methods:["Cards","Local APMs","Bank Transfer","Crypto","E-wallets"],desc:"High-risk focused EMI aggregating alternative payment methods for gambling, forex, and adult merchants globally.",website:"https://transact365.com",email:"sales@transact365.com"},
+  {name:"Currenxie",type:"EMI",hq:"Hong Kong",region:"Asia-Pacific",risk:"Medium",currencies:"Multi-currency",setup:"3–7 days",fees:"From 0.5%",mccs:["eCommerce","Marketplaces","Financial Services","Digital Goods","SaaS & Subscriptions"],methods:["SWIFT","SEPA","ACH","Local APMs","Cards"],desc:"Asia-Pacific EMI offering global business accounts with local collection capabilities in 10+ currencies.",website:"https://currenxie.com",email:"sales@currenxie.com"},
+  {name:"Payoneer (EMI)",type:"EMI",hq:"New York, USA",region:"Global",risk:"Medium",currencies:"Multi-currency",setup:"1–3 days",fees:"From 1%",mccs:["Marketplaces","eCommerce","Digital Goods","SaaS & Subscriptions"],methods:["SEPA","ACH","Wire","Cards","Local APMs"],desc:"Cross-border payment platform issuing accounts to businesses in 190+ countries for receiving marketplace payouts.",website:"https://payoneer.com",email:"sales@payoneer.com"},
+  // GATEWAYS
+  {name:"Authorize.net",type:"Gateway",hq:"Foster City, USA",region:"North America",risk:"Low",currencies:"USD,CAD,EUR,GBP,AUD",setup:"Instant",fees:"$25/mo + 2.9% + $0.30",mccs:["eCommerce","Retail & POS","SaaS & Subscriptions","Healthcare","Charities & NGOs"],methods:["Cards","eCheck","ACH","Apple Pay","PayPal"],desc:"One of the oldest and most trusted payment gateways in the US, processing billions in transactions with advanced fraud tools.",website:"https://authorize.net",email:"sales@authorize.net"},
+  {name:"NMI (Network Merchants Inc.)",type:"Gateway",hq:"Schaumburg, USA",region:"North America",risk:"Medium",currencies:"USD,CAD,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","SaaS & Subscriptions","Digital Goods","Healthcare"],methods:["Cards","ACH","eCheck","Apple Pay","Google Pay"],desc:"White-label payment gateway powering ISOs, ISVs, and payment facilitators with full API and hosted checkout support.",website:"https://nmi.com",email:"sales@nmi.com"},
+  {name:"USAePay",type:"Gateway",hq:"Los Angeles, USA",region:"North America",risk:"Medium",currencies:"USD,CAD",setup:"1–3 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Healthcare","SaaS & Subscriptions","Charities & NGOs"],methods:["Cards","eCheck","ACH","Apple Pay","Google Pay"],desc:"Flexible payment gateway with robust API, tokenization, and recurring billing for US and Canadian merchants.",website:"https://usaepay.com",email:"sales@usaepay.com"},
+  {name:"PaymentExpress (Windcave)",type:"Gateway",hq:"Auckland, New Zealand",region:"Asia-Pacific",risk:"Low",currencies:"AUD,NZD,USD,GBP,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","SaaS & Subscriptions"],methods:["Cards","Apple Pay","Google Pay","Alipay","WeChat Pay"],desc:"Asia-Pacific gateway with 20+ years handling card-present and card-not-present transactions across 50+ currencies.",website:"https://windcave.com",email:"sales@windcave.com"},
+  {name:"Opayo (Elavon)",type:"Gateway",hq:"London, UK",region:"UK",risk:"Low",currencies:"GBP,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","SaaS & Subscriptions","Healthcare","Charities & NGOs"],methods:["Cards","PayPal","Apple Pay","Google Pay","American Express"],desc:"UK's most trusted payment gateway (formerly SagePay), offering hosted, direct, and server integration options.",website:"https://opayo.co.uk",email:"support@opayo.co.uk"},
+  {name:"PayFast",type:"Gateway",hq:"Cape Town, South Africa",region:"Middle East & Africa",risk:"Low",currencies:"ZAR",setup:"Instant",fees:"2–3.5% per transaction",mccs:["eCommerce","SaaS & Subscriptions","Charities & NGOs","Digital Goods","Retail & POS"],methods:["Cards","EFT","Instant EFT","Mobicred","SnapScan"],desc:"South Africa's most popular payment gateway trusted by 100,000+ merchants with easy integration and instant onboarding.",website:"https://payfast.io",email:"support@payfast.io"},
+  {name:"Paydirekt (Giropay)",type:"Gateway",hq:"Frankfurt, Germany",region:"Europe",risk:"Low",currencies:"EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Digital Goods","Travel & Airlines","SaaS & Subscriptions"],methods:["Giropay","Online Banking","Wero","Bank Transfer"],desc:"German bank-based online payment method used by millions of German consumers for secure online checkout.",website:"https://giropay.de",email:"kontakt@giropay.de"},
+  {name:"Buckaroo",type:"Gateway",hq:"Amersfoort, Netherlands",region:"Europe",risk:"Low",currencies:"EUR,GBP",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Retail & POS","Charities & NGOs","Healthcare"],methods:["iDEAL","Cards","Bancontact","SEPA","PayPal","Klarna"],desc:"Dutch payment service provider and gateway with 20+ local European payment methods and robust subscription billing.",website:"https://buckaroo.eu",email:"sales@buckaroo.eu"},
+  {name:"Redsys",type:"Gateway",hq:"Madrid, Spain",region:"Europe",risk:"Low",currencies:"EUR",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","Healthcare","Financial Services"],methods:["Visa","Mastercard","Amex","Bizum","3DS"],desc:"Spain's dominant payment gateway processing 70%+ of Spanish e-commerce transactions for banks and merchants.",website:"https://redsys.es",email:"comercios@redsys.es"},
+  {name:"PayGate",type:"Gateway",hq:"Cape Town, South Africa",region:"Middle East & Africa",risk:"Medium",currencies:"ZAR,USD,EUR",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Travel & Airlines","SaaS & Subscriptions","Digital Goods","Retail & POS"],methods:["Cards","EFT","PayPal","Bitcoin","Mobile Payments"],desc:"Africa's leading enterprise payment gateway powering secure online payments for large retail and travel brands.",website:"https://paygate.co.za",email:"sales@paygate.co.za"},
+  {name:"Peach Payments",type:"Gateway",hq:"Cape Town, South Africa",region:"Middle East & Africa",risk:"Low",currencies:"ZAR,KES,NGN",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Marketplaces","Digital Goods","Financial Services"],methods:["Cards","EFT","Mobile Money","QR Pay","BNPL"],desc:"Pan-African payment gateway built for the continent's fastest-growing digital commerce and fintech businesses.",website:"https://peachpayments.com",email:"sales@peachpayments.com"},
+  {name:"iVeri",type:"Gateway",hq:"Johannesburg, South Africa",region:"Middle East & Africa",risk:"Medium",currencies:"ZAR,USD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","Healthcare"],methods:["Visa","Mastercard","Amex","3DS","Tokenisation"],desc:"South African payment gateway providing secure card processing with 3D Secure and full tokenization capabilities.",website:"https://iveri.com",email:"info@iveri.com"},
+  {name:"PayGate Asia",type:"Gateway",hq:"Singapore",region:"Asia-Pacific",risk:"Medium",currencies:"SGD,MYR,THB,IDR,PHP",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Travel & Airlines","Digital Goods","Marketplaces","SaaS & Subscriptions"],methods:["Cards","PayNow","DuitNow","PromptPay","GrabPay","GCash"],desc:"Southeast Asian payment gateway supporting major regional e-wallets and local bank payment schemes.",website:"https://ipg.asia",email:"sales@ipg.asia"},
+  {name:"Helcim",type:"Gateway",hq:"Calgary, Canada",region:"North America",risk:"Low",currencies:"USD,CAD",setup:"Instant",fees:"Interchange+",mccs:["Retail & POS","eCommerce","Healthcare","Charities & NGOs","SaaS & Subscriptions"],methods:["Cards","ACH","Apple Pay","Google Pay","Contactless"],desc:"Canadian gateway with interchange-plus pricing, free POS software, and zero monthly fees for low-volume businesses.",website:"https://helcim.com",email:"sales@helcim.com"},
+  {name:"Paysimple",type:"Gateway",hq:"Denver, USA",region:"North America",risk:"Low",currencies:"USD",setup:"Instant",fees:"$49.95/mo + fees",mccs:["SaaS & Subscriptions","Healthcare","Charities & NGOs","eCommerce","Services"],methods:["Cards","ACH","eCheck","Recurring Billing"],desc:"All-in-one payment gateway for service businesses combining invoicing, recurring billing, and payment processing.",website:"https://paysimple.com",email:"sales@paysimple.com"},
+  {name:"SecurionPay",type:"Gateway",hq:"Zug, Switzerland",region:"Europe",risk:"High",currencies:"EUR,USD,GBP",setup:"3–7 days",fees:"Custom",mccs:["Adult / High-Risk","Online Gambling & Gaming","Forex & FX Trading","SaaS & Subscriptions","Digital Goods"],methods:["Cards","Apple Pay","Google Pay","3DS"],desc:"European payment gateway with advanced fraud prevention and chargeback management for high-risk digital merchants.",website:"https://securionpay.com",email:"sales@securionpay.com"},
+  {name:"Payeezy (FirstData)",type:"Gateway",hq:"Atlanta, USA",region:"North America",risk:"Low",currencies:"USD,CAD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Retail & POS","Travel & Airlines","SaaS & Subscriptions"],methods:["Cards","ACH","eCheck","Apple Pay","Google Pay"],desc:"First Data's hosted payment gateway supporting omnichannel acceptance with deep POS and ecommerce integrations.",website:"https://firstdata.com",email:"sales@firstdata.com"},
+  {name:"YooMoney (YooKassa)",type:"Gateway",hq:"Moscow, Russia",region:"Europe",risk:"Medium",currencies:"RUB",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Digital Goods","SaaS & Subscriptions","Gaming & Esports","Digital Gift Cards"],methods:["Cards","YooMoney Wallet","QIWI","SBP","Bank Transfer"],desc:"Russia's top online payment solution supporting all major Russian payment methods for domestic merchants.",website:"https://yookassa.ru",email:"merchant@yoomoney.ru"},
+  {name:"CyberSource (Visa)",type:"Gateway",hq:"San Jose, USA",region:"Global",risk:"Low",currencies:"Multi-currency",setup:"1–2 weeks",fees:"Custom",mccs:["eCommerce","Travel & Airlines","SaaS & Subscriptions","Digital Goods","Marketplaces","Retail & POS"],methods:["Cards","Apple Pay","Google Pay","PayPal","Click to Pay"],desc:"Visa's enterprise payment management platform processing 40B+ transactions annually with AI-powered fraud management.",website:"https://cybersource.com",email:"sales@cybersource.com"},
+  {name:"Paytrail",type:"Gateway",hq:"Jyväskylä, Finland",region:"Europe",risk:"Low",currencies:"EUR",setup:"1–3 days",fees:"Custom",mccs:["eCommerce","SaaS & Subscriptions","Charities & NGOs","Digital Goods","Retail & POS"],methods:["Cards","Online Banking","MobilePay","Apple Pay","Google Pay"],desc:"Finland's leading payment gateway supporting all Finnish banks and major cards for domestic and international merchants.",website:"https://paytrail.com",email:"myynti@paytrail.com"},
+  {name:"PayU Gateway",type:"Gateway",hq:"Warsaw, Poland",region:"Europe",risk:"Medium",currencies:"PLN,EUR,USD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Digital Goods","Travel & Airlines","SaaS & Subscriptions"],methods:["Cards","BLIK","Bank Transfers","PayPal","Apple Pay"],desc:"Poland's leading online payment gateway with BLIK integration and wide coverage across Central and Eastern Europe.",website:"https://payu.pl",email:"bok@payu.pl"},
+  {name:"Przelewy24",type:"Gateway",hq:"Poznań, Poland",region:"Europe",risk:"Low",currencies:"PLN,EUR",setup:"1–3 days",fees:"Custom",mccs:["eCommerce","Travel & Airlines","Digital Goods","SaaS & Subscriptions","Gaming & Esports"],methods:["BLIK","Online Banking","Cards","PayPal","Apple Pay"],desc:"Poland's most popular payment gateway processing 60%+ of Polish online transactions through 170+ payment methods.",website:"https://przelewy24.pl",email:"serwis@przelewy24.pl"},
+  {name:"DigiPay",type:"Gateway",hq:"Mumbai, India",region:"Asia-Pacific",risk:"Medium",currencies:"INR,USD",setup:"3–7 days",fees:"Custom",mccs:["eCommerce","Digital Gift Cards","Gaming & Esports","SaaS & Subscriptions","Digital Goods"],methods:["UPI","Cards","Net Banking","Wallets","BNPL"],desc:"Indian payment gateway specializing in digital goods, gaming, and gift card merchants with real-time fraud screening.",website:"https://digipay.guru",email:"sales@digipay.guru"}
+];
+
+let activeType='all', filtered=[...P];
+
+function typeColor(t){return {PSP:'var(--psp)',Acquirer:'var(--acq)',ISO:'var(--iso)',EMI:'var(--emi)',Gateway:'var(--gw)'}[t]||'var(--primary)';}
+function badgeClass(t){return {PSP:'badge-psp',Acquirer:'badge-acq',ISO:'badge-iso',EMI:'badge-emi',Gateway:'badge-gw'}[t]||'badge-psp';}
+function riskClass(r){return r==='Low'?'risk-low':r==='Medium'?'risk-med':'risk-high';}
+
+function renderGrid(data){
+  const g=document.getElementById('grid'),nr=document.getElementById('noResults');
+  document.getElementById('resCount').textContent=`${data.length} provider${data.length!==1?'s':''} found`;
+  if(!data.length){g.innerHTML='';nr.style.display='block';return;}
+  nr.style.display='none';
+  g.innerHTML=data.map(p=>`
+    <div class="card" style="--c:${typeColor(p.type)}" onclick="openModal(${P.indexOf(p)})">
+      <div class="card-top">
+        <div><div class="card-name">${p.name}</div><div class="card-country">📍 ${p.hq}</div></div>
+        <span class="type-badge ${badgeClass(p.type)}">${p.type}</span>
+      </div>
+      <div class="card-desc">${p.desc}</div>
+      <div class="card-tags">
+        ${p.mccs.slice(0,3).map(m=>`<span class="tag">${m}</span>`).join('')}
+        ${p.mccs.length>3?`<span class="tag">+${p.mccs.length-3}</span>`:''}
+      </div>
+      <div class="card-bottom">
+        <span class="risk-pill ${riskClass(p.risk)}">${p.risk} Risk</span>
+        <span class="card-region">🌐 ${p.region}</span>
+      </div>
+    </div>`).join('');
+}
+
+function setType(t,el){
+  activeType=t;
+  document.querySelectorAll('.type-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  filterAll();
+}
+
+function filterAll(){
+  const q=document.getElementById('heroSearch').value.toLowerCase();
+  const region=document.getElementById('fRegion').value;
+  const mcc=document.getElementById('fMCC').value;
+  const risk=document.getElementById('fRisk').value;
+  const currency=document.getElementById('fCurrency').value;
+  filtered=P.filter(p=>{
+    if(activeType!=='all'&&p.type!==activeType)return false;
+    if(region&&p.region!==region&&p.region!=='Global')return false;
+    if(mcc&&!p.mccs.includes(mcc))return false;
+    if(risk&&p.risk!==risk)return false;
+    if(currency&&currency!=='Multi-currency'&&!p.currencies.includes(currency)&&p.currencies!=='Multi-currency')return false;
+    if(q){const h=[p.name,p.desc,...p.mccs,p.hq,p.region].join(' ').toLowerCase();if(!h.includes(q))return false;}
+    return true;
+  });
+  renderGrid(filtered);
+}
+
+function resetFilters(){
+  document.getElementById('heroSearch').value='';
+  document.getElementById('fRegion').value='';
+  document.getElementById('fMCC').value='';
+  document.getElementById('fRisk').value='';
+  document.getElementById('fCurrency').value='';
+  activeType='all';
+  document.querySelectorAll('.type-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector('.type-chip.all').classList.add('active');
+  filterAll();
+}
+
+function openModal(i){
+  const p=P[i];
+  document.getElementById('mType').innerHTML=`<span class="type-badge ${badgeClass(p.type)}">${p.type}</span>`;
+  document.getElementById('mName').textContent=p.name;
+  document.getElementById('mHQ').textContent='📍 '+p.hq;
+  document.getElementById('mDesc').textContent=p.desc;
+  document.getElementById('mT').textContent=p.type;
+  document.getElementById('mRisk').innerHTML=`<span class="risk-pill ${riskClass(p.risk)}">${p.risk}</span>`;
+  document.getElementById('mRegion').textContent=p.region;
+  document.getElementById('mCurrency').textContent=p.currencies;
+  document.getElementById('mSetup').textContent=p.setup;
+  document.getElementById('mFees').textContent=p.fees;
+  document.getElementById('mMCCs').innerHTML=p.mccs.map(m=>`<span class="tag highlight">${m}</span>`).join('');
+  document.getElementById('mMethods').innerHTML=p.methods.map(m=>`<span class="tag">${m}</span>`).join('');
+  const ws=document.getElementById('mWebsite'),em=document.getElementById('mEmail');
+  ws.href=p.website;
+  try{ws.textContent='🌐 '+new URL(p.website).hostname.replace('www.','');}catch{ws.textContent='🌐 Visit Website';}
+  em.href='mailto:'+p.email;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e){if(e.target===document.getElementById('modal'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
+
+function submitInquiry(){
+  const email=document.getElementById('iqEmail').value;
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){alert('Please enter a valid email.');return;}
+  document.getElementById('inquiryForm').style.display='none';
+  document.getElementById('iqSuccess').style.display='block';
+}
+
+renderGrid(P);
+</script>
+</body>
+</html>
